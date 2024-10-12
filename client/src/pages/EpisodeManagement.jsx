@@ -32,7 +32,7 @@ const EpisodeManagement = () => {
       setSeasonTitle(seasonResponse.data.data.title);
       setEpisodes(episodeResponse.data.data);
     } catch (error) {
-      toast.error("Failed to load episodes.");
+      toast.error(error?.response?.data?.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,7 @@ const EpisodeManagement = () => {
         fetchEpisodes();
         toast.success("Episode deleted successfully.");
       } catch (error) {
-        toast.error("Failed to delete episode.");
+        toast.error(error?.response?.data?.message || "Something went wrong.");
       }
     }
   };

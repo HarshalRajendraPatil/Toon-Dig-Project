@@ -35,7 +35,7 @@ const EditAnime = () => {
           imageUrl: imageUrl.url,
         });
       } catch (err) {
-        toast.error("Failed to fetch anime data.");
+        toast.error(err?.response?.data?.message || "Something went wrong.");
       }
     };
 

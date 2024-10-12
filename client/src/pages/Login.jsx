@@ -25,7 +25,9 @@ const Login = () => {
 
     if (!formData?.password?.trim() || !formData?.email?.trim()) {
       dispatch(setLoading(false)); // Set loading to false if validation fails
-      return toast.error("Fill out all the fields correctly.");
+      return toast.error(
+        error?.response?.data?.message || "Something went wrong."
+      );
     }
 
     try {

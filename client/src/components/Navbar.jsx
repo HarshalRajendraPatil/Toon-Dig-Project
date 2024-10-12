@@ -25,7 +25,7 @@ const Navbar = ({ userRole }) => {
     } catch (error) {
       console.log(error);
       dispatch(setError(error?.response?.data?.message || "Logout failed."));
-      toast.error("Something went wrong. Try again later");
+      toast.error(error?.response?.data?.message || "Something went wrong.");
     }
   };
 

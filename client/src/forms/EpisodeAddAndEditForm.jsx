@@ -57,7 +57,7 @@ const EpisodeAddAndEditForm = ({
       closeModal();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to save the episode.");
+      toast.error(error?.response?.data?.message || "Something went wrong.");
       setLoading(false);
     }
   };

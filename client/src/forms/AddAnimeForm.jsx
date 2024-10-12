@@ -39,7 +39,7 @@ const AddAnimeForm = () => {
       navigate("/admin/anime-management"); // Redirect to anime management page after submission
     } catch (error) {
       console.error("Error adding anime:", error);
-      toast.error(error.message);
+      toast.error(error?.response?.data?.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }

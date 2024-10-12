@@ -21,6 +21,7 @@ const CustomisableAnimeDisplaySection = ({
       } catch (error) {
         console.error("Error fetching trending anime:", error);
         setLoading(false);
+        toast.error(error?.response?.data?.message || "Something went wrong.");
       }
     };
 

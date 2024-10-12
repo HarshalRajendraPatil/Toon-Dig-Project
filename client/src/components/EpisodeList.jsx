@@ -13,14 +13,19 @@ const EpisodeList = ({ id }) => {
         );
         setEpisodes(response.data.data);
       } catch (error) {
+        console.log(error);
         console.error("Error fetching episodes", error);
-        toast.error(error.message);
+        toast.error(error?.response?.data?.message || "Something went wrong.");
       }
     };
-    fetchEpisodes();
+    if (id) fetchEpisodes();
   }, [id]);
 
-  return (
+  return episodes?.length === 0 ? (
+    <h1 className="text-white text-center text-3xl">
+      The Episodes for this season will be uploaded soon.
+    </h1>
+  ) : (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
       {episodes.map((episode) => (
         <div

@@ -12,7 +12,7 @@ const AnimePage = () => {
   const [anime, setAnime] = useState(null);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [seasonId, setSeasonId] = useState(anime ? anime.seasons[0] : null);
-  const [seasonInfo, setSeasonInfo] = useState({});
+  const [seasonInfo, setSeasonInfo] = useState(null);
 
   useEffect(() => {
     // Fetch anime details
@@ -23,7 +23,7 @@ const AnimePage = () => {
         setSeasonId(response.data.data.seasons[selectedSeason - 1]);
       } catch (error) {
         console.error("Error fetching anime details", error);
-        toast.error(error.message);
+        toast.error(error?.response?.data?.message || "Something went wrong.");
       }
     };
     fetchAnimeDetails();
@@ -35,10 +35,10 @@ const AnimePage = () => {
         setSeasonInfo(response.data.data);
       } catch (error) {
         console.error("Error fetching anime details", error);
-        toast.error(error.message);
+        toast.error(error?.response?.data?.message || "Something went wrong.");
       }
     };
-    fetchSeasonInfo();
+    if (animeId && seasonId && anime?.seasons?.length > 0) fetchSeasonInfo();
   }, [animeId, seasonId]);
 
   const handleSeasonChange = (seasonNumber) => {
@@ -79,7 +79,13 @@ const AnimePage = () => {
         />
 
         {/* Season Hero Section */}
-        {seasonInfo && (
+        {anime?.seasons?.length === 0 ? (
+          <h1 className="text-white text-center text-3xl">
+            The seasons will be uploaded soon.
+          </h1>
+        ) : !seasonInfo ? (
+          <LoadingSpinner />
+        ) : (
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8 transition-transform transform hover:scale-[1.01]">
             <div className="flex flex-col md:flex-row">
               {/* Season Image */}

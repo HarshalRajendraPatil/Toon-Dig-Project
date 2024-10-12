@@ -61,7 +61,7 @@ const SeasonAddAndEditForm = ({ id, season, closeModal, fetchSeasons }) => {
       closeModal();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to save the season.");
+      toast.error(error?.response?.data?.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }

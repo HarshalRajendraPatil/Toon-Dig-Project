@@ -17,7 +17,9 @@ const ForgotPassword = () => {
     setLoading(true);
     if (!formData?.email?.trim()) {
       setLoading(false);
-      return toast.error("Please provide the registered email.");
+      return toast.error(
+        error?.response?.data?.message || "Something went wrong."
+      );
     }
 
     try {

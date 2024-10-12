@@ -32,7 +32,9 @@ const Signup = () => {
       !formData?.email?.trim()
     ) {
       setLoading(false);
-      return toast.error("Fill out all the fields correctly.");
+      return toast.error(
+        error?.response?.data?.message || "Something went wrong."
+      );
     }
 
     if (formData?.password !== formData?.confirmPassword) {
