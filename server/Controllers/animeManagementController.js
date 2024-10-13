@@ -60,6 +60,8 @@ export const getAllAnimes = catchAsync(async (req, res) => {
     search = "",
     genre = "",
     status = "",
+    sortBy = "title", // Default sort by title
+    sortOrder = "asc", // Default ascending order
     page = 1,
     limit = 10,
   } = req.query;
@@ -71,12 +73,17 @@ export const getAllAnimes = catchAsync(async (req, res) => {
   if (status) query.status = status;
 
   const skip = (page - 1) * limit; // Calculate the number of documents to skip
+  const sortOptions = { [sortBy]: sortOrder === "asc" ? 1 : -1 }; // Dynamic sorting
 
   try {
     const totalAnimes = await Anime.countDocuments(query);
     const totalPages = Math.ceil(totalAnimes / limit);
 
-    const animes = await Anime.find(query).skip(skip).limit(Number(limit));
+    const animes = await Anime.find(query)
+      .sort(sortOptions) // Sorting based on provided field and order
+      .skip(skip)
+      .limit(Number(limit));
+
     res.status(200).json({ status: "success", data: animes, totalPages });
   } catch (error) {
     console.error("Error fetching anime:", error);

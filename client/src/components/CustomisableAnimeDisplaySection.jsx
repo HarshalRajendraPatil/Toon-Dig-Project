@@ -48,12 +48,10 @@ const CustomisableAnimeDisplaySection = ({
             <div className="flex overflow-x-scroll scrollbar-hide space-x-4">
               {trendingAnime.map((anime, index) => (
                 <AnimeDisplay
-                  key={index}
-                  posterUrl={anime.imageUrl.url}
+                  key={anime._id}
                   index={index}
                   showRank={showRank}
-                  title={anime.title}
-                  id={anime._id}
+                  anime={anime}
                 />
               ))}
             </div>

@@ -13,6 +13,7 @@ import EditAnimeForm from "./forms/EditAnimeForm";
 import SeasonManagement from "./pages/SeasonManagement";
 import EpisodeManagement from "./pages/EpisodeManagement";
 import AnimePage from "./pages/AnimePage";
+import AnimeSearchPage from "./pages/AnimeSearchPage";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
             path="/admin/anime-management/:animeId/episodes/:id"
             element={<EpisodeManagement />}
           />
+          <Route path="/anime" element={<AnimeSearchPage />} />
           <Route path="/anime/:animeName" element={<AnimePage />} />
         </Route>
         <Route path="/register" element={<Signup />} />
