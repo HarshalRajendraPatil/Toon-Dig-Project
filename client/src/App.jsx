@@ -38,7 +38,7 @@ function App() {
             path="/admin/anime-management/:animeId/episodes/:id"
             element={<EpisodeManagement />}
           />
-          <Route path="/anime/:animeId" element={<AnimePage />} />
+          <Route path="/anime/:animeName" element={<AnimePage />} />
         </Route>
         <Route path="/register" element={<Signup />} />
         <Route path="/login" element={<Login />} />

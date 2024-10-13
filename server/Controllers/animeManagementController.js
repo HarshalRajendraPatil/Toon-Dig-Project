@@ -46,11 +46,10 @@ export const addAnime = catchAsync(async (req, res, next) => {
 });
 
 export const getAnime = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
-  if (!ObjectId.isValid(id))
-    return next(new CustomError("This anime does not exists.", 404));
+  let { animeName } = req.params;
+  animeName = animeName.split("-").join(" ");
 
-  const anime = await Anime.findById(id);
+  const anime = await Anime.findOne({ title: animeName }).populate("seasons");
   if (!anime) return next(new CustomError("This anime does not exists.", 404));
 
   res.status(200).json({ status: "success", data: anime });

@@ -2,8 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const AnimeDisplay = ({ posterUrl, title, index, showRank, id }) => {
+  const t = title.replaceAll(" ", "-");
+
   return (
-    <Link to={`/anime/${id}`} key={id} className="relative group flex-shrink-0">
+    <Link to={`/anime/${t}`} key={id} className="relative group flex-shrink-0">
       {/* Anime Poster */}
       <div className="relative">
         <img

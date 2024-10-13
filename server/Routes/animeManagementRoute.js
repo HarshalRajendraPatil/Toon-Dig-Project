@@ -23,7 +23,7 @@ router.delete("/anime/:animeId", deleteAnime);
 
 router.get("/anime", getAllAnimes);
 
-router.get("/anime/:id", getAnime);
+router.get("/anime/:animeName", getAnime);
 
 // Exporting the router
 export default router;
