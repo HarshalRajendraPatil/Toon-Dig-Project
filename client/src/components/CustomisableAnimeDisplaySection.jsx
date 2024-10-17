@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import AnimeDisplay from "./AnimeDisplay";
 import axiosInstance from "../config/axiosConfig";
+import { toast } from "react-toastify";
 
 const CustomisableAnimeDisplaySection = ({
   heading = "Anime",

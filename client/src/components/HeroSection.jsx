@@ -8,7 +8,7 @@ const HeroSection = () => {
       <div
         className="absolute inset-0 bg-cover bg-center opacity-50"
         style={{
-          backgroundImage: "url('HeorSection.png')", // Replace with your anime-related background image
+          backgroundImage: "url('HeorSection.jpg')", // Replace with your anime-related background image
         }}
       ></div>
 

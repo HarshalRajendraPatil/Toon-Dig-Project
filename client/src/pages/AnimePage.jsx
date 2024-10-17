@@ -2,20 +2,20 @@ import React, { useState, useEffect } from "react";
 import AnimeDetail from "../components/AnimeDetail";
 import SeasonSelector from "../components/SeasonSelector";
 import EpisodeList from "../components/EpisodeList";
-import { useParams } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchAnimeDetails } from "../store/slices/animeSlice";
 import { addSeason, clearSeason } from "../store/slices/seasonSlice";
 import { fetchEpisodes, clearEpisodes } from "../store/slices/episodeSlice";
+import { addToFavorites, addToWatchlist } from "../store/slices/userSlice"; // Import actions for favorites and watchlist
 
 const AnimePage = () => {
   const dispatch = useDispatch();
   const { animeName } = useParams();
 
-  // Local state for the selected season
   const [selectedSeason, setSelectedSeason] = useState(1);
-  const [isLoadingData, setIsLoadingData] = useState(true); // Manage overall loading state
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   const { anime, loading: animeLoading } = useSelector((state) => state.anime);
   const { seasonInfo, loading: seasonLoading } = useSelector(
@@ -24,56 +24,75 @@ const AnimePage = () => {
   const { episodes, loading: episodeLoading } = useSelector(
     (state) => state.episode
   );
+  const { user } = useSelector((state) => state.user); // Get the current user from the store
+  // Add two states to track if the anime is in favorites or watchlist
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
 
-  // Fetch anime details when the animeName changes
   useEffect(() => {
-    setIsLoadingData(true); // Start loading when animeName changes
+    setIsLoadingData(true);
     dispatch(clearSeason());
-    dispatch(clearEpisodes()); // Clear episodes when anime changes
+    dispatch(clearEpisodes());
     dispatch(fetchAnimeDetails(animeName)).finally(() => {
-      setIsLoadingData(false); // End loading once anime details are fetched
+      setIsLoadingData(false);
     });
+    setIsFavorite(user?.favorites?.includes(anime?._id));
+    setIsInWatchlist(user?.watchlist?.includes(anime?._id));
   }, [animeName, dispatch]);
 
-  // Update the selected season's info when anime is loaded
   useEffect(() => {
     if (!animeLoading && anime) {
-      setIsLoadingData(true); // Start loading for new season data
+      setIsLoadingData(true);
       const seasonId = anime.seasons?.[selectedSeason - 1]?._id || null;
       if (seasonId) {
-        dispatch(clearEpisodes()); // Ensure episodes are cleared when new season is selected
+        dispatch(clearEpisodes());
         dispatch(addSeason(anime.seasons[selectedSeason - 1]));
         dispatch(fetchEpisodes(seasonId)).finally(() => {
-          setIsLoadingData(false); // End loading after fetching episodes
+          setIsLoadingData(false);
         });
       } else {
-        setIsLoadingData(false); // End loading if there's no seasonId
+        setIsLoadingData(false);
       }
     }
-  }, [anime, animeLoading, selectedSeason, dispatch, animeName]);
 
-  // Handle season change
+    setIsFavorite(user?.favorites?.includes(anime?._id));
+    setIsInWatchlist(user?.watchlist?.includes(anime?._id));
+  }, [anime, animeLoading, selectedSeason, dispatch]);
+
   const handleSeasonChange = (seasonNumber) => {
     setSelectedSeason(seasonNumber);
     dispatch(clearSeason());
-    dispatch(clearEpisodes()); // Clear episodes when a new season is selected
-    setIsLoadingData(true); // Start loading new season
+    dispatch(clearEpisodes());
+    setIsLoadingData(true);
     const seasonId = anime.seasons?.[seasonNumber - 1]?._id;
     if (seasonId) {
       dispatch(addSeason(anime.seasons[seasonNumber - 1]));
       dispatch(fetchEpisodes(seasonId)).finally(() => {
-        setIsLoadingData(false); // End loading after fetching new episodes
+        setIsLoadingData(false);
       });
     } else {
-      setIsLoadingData(false); // End loading if there's no seasonId
+      setIsLoadingData(false);
     }
+  };
+
+  // Handle adding to favorites
+  const handleAddToFavorites = () => {
+    dispatch(addToFavorites(anime._id)).then(() => {
+      setIsFavorite((e) => !e); // Update UI to reflect that the anime is added to favorites
+    });
+  };
+
+  // Handle adding to watchlist
+  const handleAddToWatchlist = () => {
+    dispatch(addToWatchlist(anime._id)).then(() => {
+      setIsInWatchlist((e) => !e); // Update UI to reflect that the anime is added to watchlist
+    });
   };
 
   if (animeLoading || isLoadingData) return <LoadingSpinner />;
 
   return (
     <div className="relative w-full min-h-screen bg-gray-900 text-gray-100">
-      {/* Hero Section */}
       <div
         className="relative w-full h-[60vh] overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${anime?.imageUrl?.url})` }}
@@ -93,6 +112,29 @@ const AnimePage = () => {
       <div className="relative z-20 px-6 py-12 max-w-7xl mx-auto space-y-8">
         {/* Anime Info */}
         <AnimeDetail anime={anime} />
+
+        {/* Buttons for Favorites and Watchlist */}
+        {user && (
+          <div className="flex space-x-4 mb-6">
+            <button
+              className={`${
+                isFavorite ? "bg-gray-500" : "bg-purple-500"
+              } text-white py-2 px-4 rounded-lg font-semibold shadow-md`}
+              onClick={handleAddToFavorites}
+            >
+              {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+            </button>
+
+            <button
+              className={`${
+                isInWatchlist ? "bg-gray-500" : "bg-blue-500"
+              } text-white py-2 px-4 rounded-lg font-semibold shadow-md`}
+              onClick={handleAddToWatchlist}
+            >
+              {isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
+            </button>
+          </div>
+        )}
 
         {/* Season Selector */}
         <SeasonSelector
@@ -116,7 +158,6 @@ const AnimePage = () => {
           <LoadingSpinner />
         ) : (
           <>
-            {/* Season Details */}
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
               <div className="flex flex-col md:flex-row">
                 <img
@@ -143,7 +184,6 @@ const AnimePage = () => {
               </div>
             </div>
 
-            {/* Episodes or No Episodes */}
             {seasonInfo?.episodes?.length === 0 ? (
               <div className="flex flex-col justify-center items-center text-center py-10">
                 <h1 className="text-3xl font-semibold text-purple-400 mb-2">

@@ -69,13 +69,6 @@ const Navbar = ({ userRole }) => {
                 Anime
               </Link>
               <Link
-                to="/watchlist"
-                className="px-2 py-2 rounded-md text-sm font-medium hover:bg-gray-800"
-                onClick={() => setIsOpen(false)}
-              >
-                Watchlist
-              </Link>
-              <Link
                 to="/community"
                 className="px-2 py-2 rounded-md text-sm font-medium hover:bg-gray-800"
                 onClick={() => setIsOpen(false)}

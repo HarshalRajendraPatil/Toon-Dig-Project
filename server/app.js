@@ -7,6 +7,7 @@ import fileUpload from "express-fileupload";
 import { config } from "dotenv";
 
 import authRoutes from "./Routes/authRoute.js";
+import userRoutes from "./Routes/userRoutes.js";
 import animeManagementRoutes from "./Routes/animeManagementRoute.js";
 import seasonManagementRoutes from "./Routes/seasonManagementRoute.js";
 import episodeManagementRoutes from "./Routes/episodeManagementRoute.js";
@@ -27,6 +28,7 @@ app.use(morgan("dev"));
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users/", userRoutes);
 app.use(
   "/api/admin",
   animeManagementRoutes,

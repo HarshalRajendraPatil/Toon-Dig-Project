@@ -14,6 +14,7 @@ import SeasonManagement from "./pages/SeasonManagement";
 import EpisodeManagement from "./pages/EpisodeManagement";
 import AnimePage from "./pages/AnimePage";
 import AnimeSearchPage from "./pages/AnimeSearchPage";
+import ProfileApp from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
           />
           <Route path="/anime" element={<AnimeSearchPage />} />
           <Route path="/anime/:animeName" element={<AnimePage />} />
+          <Route path="/profile" element={<ProfileApp />} />
         </Route>
         <Route path="/register" element={<Signup />} />
         <Route path="/login" element={<Login />} />

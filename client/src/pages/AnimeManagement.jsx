@@ -23,13 +23,21 @@ const AnimeManagement = () => {
   }, [searchQuery, genreFilter, statusFilter, page]);
 
   const fetchAnimes = async () => {
-    setLoading(true);
-    const response = await axiosInstace.get(
-      `/api/admin/anime?page=${page}&search=${searchQuery}&genre=${genreFilter}&status=${statusFilter}`
-    );
-    setAnimes(response.data.data);
-    setTotalPages(response.data.totalPages); // Assume backend sends total pages
-    setLoading(false);
+    try {
+      setLoading(true);
+      const response = await axiosInstace.get(
+        `/api/admin/anime?page=${page}&search=${searchQuery}&genre=${genreFilter}&status=${statusFilter}`
+      );
+      setAnimes(response.data.data);
+      setTotalPages(response.data.totalPages); // Assume backend sends total pages
+    } catch (error) {
+      console.log(error);
+      toast.error(
+        error?.response?.data?.message || "Failed to fetcht the animes."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (animeId) => {
@@ -100,6 +108,10 @@ const AnimeManagement = () => {
       {/* Anime List - Toggle between grid and table */}
       {loading ? (
         <LoadingSpinner />
+      ) : animes.length === 0 ? (
+        <h1 className="text-3xl text-center font-semibold text-purple-400 mb-2">
+          No Anime Found
+        </h1>
       ) : viewMode === "table" ? (
         <div className="overflow-x-auto">
           <table className="table-auto w-full border-collapse border">

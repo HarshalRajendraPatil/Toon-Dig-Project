@@ -21,9 +21,18 @@ const UserSchema = new mongoose.Schema(
       required: true,
     },
     profilePicture: {
-      type: String,
-      default: "",
+      url: String,
+      public_id: String,
     },
+    bio: {
+      type: String,
+    },
+    activities: [
+      {
+        type: String, // Description of the activity
+        timestamp: { type: Date, default: Date.now }, // Activity timestamp
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now,
@@ -71,6 +80,16 @@ const UserSchema = new mongoose.Schema(
     ],
     watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Anime" }],
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Anime" }],
+
+    // New fields for tracking stats
+    stats: {
+      watchlistCount: { type: Number, default: 0 }, // Number of anime in the watchlist
+      favoritesCount: { type: Number, default: 0 }, // Number of favorited anime
+      watchHistoryCount: { type: Number, default: 0 }, // Number of watched anime
+      animeWatched: { type: Number, default: 0 }, // Total anime watched
+      totalHoursSpent: { type: Number, default: 0 }, // Total hours spent watching anime
+      totalReviews: { type: Number, default: 0 }, // Total reviews written by the user
+    },
 
     // Notifications
     notifications: [
@@ -125,6 +144,10 @@ const UserSchema = new mongoose.Schema(
     settings: {
       emailNotifications: { type: Boolean, default: true },
       inAppNotifications: { type: Boolean, default: true },
+      // Added these based on your settings page
+      language: { type: String, default: "en" }, // User's preferred language
+      smsNotifications: { type: Boolean, default: false }, // SMS notifications
+      twoFactorAuthEnabled: { type: Boolean, default: false }, // Two-factor authentication
     },
   },
   { timestamps: true }
@@ -145,4 +168,6 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-export default mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
+
+export default User;
