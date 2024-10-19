@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axiosInstance from "../../config/axiosConfig.js";
 import { toast } from "react-toastify";
 import LoadingSpinner from "../LoadingSpinner.jsx";
+import { Link } from "react-router-dom";
 
 const ListSection = ({ title, icon, emptyMessage }) => {
   const [items, setItems] = useState([]);
@@ -41,23 +42,26 @@ const ListSection = ({ title, icon, emptyMessage }) => {
       ) : (
         <ul className="space-y-4">
           {items.map((anime, index) => (
-            <li
-              key={index}
-              className="bg-gray-700 p-4 rounded-lg shadow-md flex items-center space-x-4"
-            >
-              <img
-                src={anime?.imageUrl?.url}
-                alt={anime?.title}
-                className="w-16 h-16 rounded-md object-cover"
-              />
-              <div>
-                <h4 className="text-lg font-semibold text-white">
-                  {anime?.title}
-                </h4>
-                <p className="text-gray-400">
-                  {anime?.seasons?.length || 0} seasons
-                </p>
-              </div>
+            <li key={index} className="">
+              {(anime.title = anime.title.split(" ").join("-"))}
+              <Link
+                to={`/anime/${anime?.title}`}
+                className="bg-gray-700 p-4 rounded-lg shadow-md flex justify-start items-center gap-4 flex-wrap"
+              >
+                <img
+                  src={anime?.imageUrl?.url}
+                  alt={anime?.title}
+                  className="w-16 h-16 rounded-md object-cover"
+                />
+                <div>
+                  <h4 className="text-lg font-semibold text-white">
+                    {anime?.title}
+                  </h4>
+                  <p className="text-gray-400">
+                    {anime?.seasons?.length || 0} seasons
+                  </p>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

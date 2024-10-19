@@ -7,7 +7,6 @@ const WatchlistTab = ({ user }) => {
     <ListSection
       title="Watchlist"
       icon={<FaListAlt />}
-      items={user?.watchlist || []}
       emptyMessage="Your watchlist is currently empty."
     />
   );

@@ -6,9 +6,11 @@ import cloudinary from "../services/cloudinary.js";
 import CustomError from "../Utils/CustomError.js";
 
 export const addSeason = catchAsync(async (req, res, next) => {
-  const { animeId } = req.params;
+  let { animeId } = req.params;
+  animeId = animeId.split("-").join(" ");
 
-  const anime = await Anime.findById(animeId);
+  const anime = await Anime.findOne({ title: animeId });
+
   if (!anime) return next(new CustomError("This anime does not exists", 404));
   const { number, title, description, releaseDate } = req.body;
   const coverImage = req.files?.coverImage;
@@ -24,7 +26,7 @@ export const addSeason = catchAsync(async (req, res, next) => {
   );
 
   const seasonBody = {
-    animeId,
+    animeId: anime._id,
     number,
     title,
     description,
@@ -34,6 +36,7 @@ export const addSeason = catchAsync(async (req, res, next) => {
   };
 
   const season = await Season.create(seasonBody);
+
   anime.seasons.push(season._id);
   await anime.save();
   res.status(201).json({
@@ -43,15 +46,13 @@ export const addSeason = catchAsync(async (req, res, next) => {
 });
 
 export const updateSeason = catchAsync(async (req, res, next) => {
-  const { animeId, seasonId } = req.params;
-  if (!ObjectId.isValid(animeId)) {
-    return next(new CustomError("This anime does not exists", 404));
-  }
+  let { animeId, seasonId } = req.params;
+  animeId = animeId.split("-").join(" ");
   if (!ObjectId.isValid(seasonId)) {
     return next(new CustomError("This season does not exists.", 404));
   }
 
-  const anime = await Anime.findById(animeId);
+  const anime = await Anime.findOne({ title: animeId });
   if (!anime) return next(new CustomError("This anime does not exists.", 404));
 
   const updatedBody = req.body;
@@ -81,15 +82,15 @@ export const updateSeason = catchAsync(async (req, res, next) => {
 });
 
 export const getAllSeasons = catchAsync(async (req, res, next) => {
-  const { animeId } = req.params;
-  if (!ObjectId.isValid(animeId)) {
-    return next(new CustomError("This anime does not exists", 404));
-  }
+  let { animeId } = req.params;
+  animeId = animeId.split("-").join(" ");
 
-  const anime = await Anime.findById(animeId);
-  if (!anime) return next(new CustomError("This anime does not exists.", 404));
+  const anime = await Anime.findOne({ title: animeId }).populate("seasons");
+  console.log(anime);
+  if (!anime)
+    return next(new CustomError("This anime does not exists.fadf", 404));
 
-  const seasons = await Season.find({ animeId });
+  const seasons = anime.seasons;
   res.status(200).json({
     status: "success",
     data: seasons,
@@ -97,15 +98,16 @@ export const getAllSeasons = catchAsync(async (req, res, next) => {
 });
 
 export const getSeason = catchAsync(async (req, res, next) => {
-  const { animeId, seasonId } = req.params;
-  if (!ObjectId.isValid(animeId)) {
-    return next(new CustomError("This anime does not exists", 404));
-  }
+  let { animeId, seasonId } = req.params;
+  animeId = animeId.split("-").join(" ");
+  // if (!ObjectId.isValid(animeId)) {
+  //   return next(new CustomError("This anime does not exists", 404));
+  // }
   if (!ObjectId.isValid(seasonId)) {
     return next(new CustomError("This season does not exists.", 404));
   }
 
-  const anime = await Anime.findById(animeId);
+  const anime = await Anime.findOne({ title: animeId });
   if (!anime) return next(new CustomError("This anime does not exists.", 404));
 
   const season = await Season.findById(seasonId);
@@ -118,15 +120,14 @@ export const getSeason = catchAsync(async (req, res, next) => {
 });
 
 export const deleteSeason = catchAsync(async (req, res, next) => {
-  const { animeId, seasonId } = req.params;
-  if (!ObjectId.isValid(animeId)) {
-    return next(new CustomError("This anime does not exists", 404));
-  }
+  let { animeId, seasonId } = req.params;
+  animeId = animeId.split("-").join(" ");
+
   if (!ObjectId.isValid(seasonId)) {
     return next(new CustomError("This season does not exists.", 404));
   }
 
-  const anime = await Anime.findById(animeId);
+  const anime = await Anime.findOne({ title: animeId });
   if (!anime) return next(new CustomError("This anime does not exists.", 404));
 
   const season = await Season.findById(seasonId);

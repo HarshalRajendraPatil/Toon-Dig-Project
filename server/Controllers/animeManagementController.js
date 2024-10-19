@@ -92,10 +92,9 @@ export const getAllAnimes = catchAsync(async (req, res) => {
 });
 
 export const updateAnime = catchAsync(async (req, res, next) => {
-  const { animeId } = req.params;
-  if (!ObjectId.isValid(animeId)) {
-    return next(new CustomError("This anime does not exists", 404));
-  }
+  let { animeId } = req.params;
+  animeId = animeId.split("-").join(" ");
+
   const updatedBody = req.body;
   if (updatedBody?.genres) updatedBody.genres = updatedBody.genres.split(", ");
   if (updatedBody?.averageRating) delete updatedBody.averageRating;
@@ -113,7 +112,7 @@ export const updateAnime = catchAsync(async (req, res, next) => {
     updatedBody["imageUrl.public_id"] = result.public_id;
   }
 
-  const anime = await Anime.findByIdAndUpdate(animeId, updatedBody, {
+  const anime = await Anime.findOneAndUpdate({ title: animeId }, updatedBody, {
     new: true,
     runValidators: true,
   });

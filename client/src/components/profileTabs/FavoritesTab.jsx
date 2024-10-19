@@ -7,7 +7,6 @@ const FavoritesTab = ({ user }) => {
     <ListSection
       title="Favorites"
       icon={<FaHeart />}
-      items={user?.favorites || []}
       emptyMessage="You haven't added any favorites yet."
     />
   );

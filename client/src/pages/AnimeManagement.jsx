@@ -150,7 +150,9 @@ const AnimeManagement = () => {
                     flex-wrap"
                     >
                       <Link
-                        to={`/admin/anime-management/edit-anime/${anime._id}`}
+                        to={`/admin/anime-management/edit-anime/${anime.title
+                          .split(" ")
+                          .join("-")}`}
                         className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
                       >
                         Edit
@@ -163,7 +165,9 @@ const AnimeManagement = () => {
                       </button>
                       {/* Add Season Button */}
                       <Link
-                        to={`/admin/anime-management/seasons/${anime._id}`}
+                        to={`/admin/anime-management/seasons/${anime.title
+                          .split(" ")
+                          .join("-")}`}
                         className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
                       >
                         Manage Seasons
@@ -196,7 +200,9 @@ const AnimeManagement = () => {
               <p className="text-gray-400 mb-2">Status: {anime.status}</p>
               <div className="flex flex-wrap justify-start items-center gap-2">
                 <Link
-                  to={`/admin/anime-management/edit-anime/${anime._id}`}
+                  to={`/admin/anime-management/edit-anime/${anime.title
+                    .split(" ")
+                    .join("-")}`}
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
                 >
                   Edit
@@ -209,7 +215,9 @@ const AnimeManagement = () => {
                 </button>
                 {/* Add Season Button */}
                 <Link
-                  to={`/admin/anime-management/seasons/${anime._id}`}
+                  to={`/admin/anime-management/seasons/${anime.title
+                    .split(" ")
+                    .join("-")}`}
                   className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
                 >
                   Manage Seasons

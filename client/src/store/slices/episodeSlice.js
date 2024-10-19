@@ -23,6 +23,7 @@ const episodeSlice = createSlice({
   name: "episode",
   initialState: {
     episodes: [],
+    currentEpisodeId: "",
     loading: false,
     error: null,
   },
@@ -32,6 +33,9 @@ const episodeSlice = createSlice({
     },
     addEpisodes(state, action) {
       state.episodes = action.payload;
+    },
+    setCurrentEpisode(state, action) {
+      state.currentEpisodeId = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -51,6 +55,7 @@ const episodeSlice = createSlice({
   },
 });
 
-export const { clearEpisodes, addEpisodes } = episodeSlice.actions;
+export const { clearEpisodes, addEpisodes, setCurrentEpisode } =
+  episodeSlice.actions;
 
 export default episodeSlice.reducer;
