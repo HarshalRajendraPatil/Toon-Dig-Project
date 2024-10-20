@@ -16,12 +16,12 @@ const EpisodeList = ({ episodes = [] }) => {
       {episodes.map((episode) => (
         <button
           key={episode?.number}
-          className="bg-gray-800 hover:bg-gray-700 rounded-lg shadow-lg overflow-hidden transition transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-50"
+          className="bg-gray-800 hover:bg-gray-700 rounded-lg shadow-lg overflow-hidden transition transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-50 w-full flex flex-col items-start justify-start"
           onClick={() => setEpisode(episode?._id)}
         >
-          <Link to={`/${title}/stream`} className="block">
+          <Link to={`/${title}/stream`}>
             {/* Episode Image */}
-            <div className="relative w-full h-48 flex flex-col items-start justify-start">
+            <div className="h-48 relative">
               <img
                 src={episode?.thumbnailUrl || "/default-episode-image.jpg"}
                 alt={`Episode ${episode?.number}`}

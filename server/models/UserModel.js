@@ -89,6 +89,7 @@ const UserSchema = new mongoose.Schema(
       animeWatched: { type: Number, default: 0 }, // Total anime watched
       totalHoursSpent: { type: Number, default: 0 }, // Total hours spent watching anime
       totalReviews: { type: Number, default: 0 }, // Total reviews written by the user
+      totalComments: { type: Number, default: 0 },
     },
 
     // Notifications

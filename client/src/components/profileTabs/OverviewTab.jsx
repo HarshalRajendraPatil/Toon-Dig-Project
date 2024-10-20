@@ -96,7 +96,7 @@ const OverviewTab = ({
         </p>
         <p className="text-xl">
           <strong>Total Comments Posted:</strong>{" "}
-          {user?.stats?.totalCommentsPosted || 0}
+          {user?.stats?.totalComments || 0}
         </p>
         <p className="text-xl">
           <strong>Total Ratings Given:</strong>{" "}
