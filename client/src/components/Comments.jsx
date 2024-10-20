@@ -16,8 +16,6 @@ const Comments = ({ episodeId }) => {
   const [loading, setLoading] = useState(false);
   const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(false);
   const COMMENTS_PER_PAGE = 5; // Number of comments to fetch per page
-
-  // Store comment edit states
   const [editingCommentId, setEditingCommentId] = useState(null); // ID of the comment being edited
   const [editCommentText, setEditCommentText] = useState(""); // Edited comment text
 
