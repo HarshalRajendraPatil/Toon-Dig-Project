@@ -53,7 +53,7 @@ const AnimeSchema = new Schema({
   reviewsAndRating: [
     {
       type: Schema.Types.ObjectId,
-      ref: "ReviewAndRating",
+      ref: "ReviewAndRatings",
     },
   ],
   createdAt: {

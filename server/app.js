@@ -12,6 +12,7 @@ import animeManagementRoutes from "./Routes/animeManagementRoute.js";
 import seasonManagementRoutes from "./Routes/seasonManagementRoute.js";
 import episodeManagementRoutes from "./Routes/episodeManagementRoute.js";
 import commentManagementRoutes from "./Routes/commentRoute.js";
+import reviewAndRatingsManagementRoutes from "./Routes/ReviewsAndRatingsRoute.js";
 
 const app = express();
 config({ path: "./.env" });
@@ -37,6 +38,7 @@ app.use(
   episodeManagementRoutes
 );
 app.use("/api/comments", commentManagementRoutes);
+app.use("/api/reviews", reviewAndRatingsManagementRoutes);
 
 app.use(errorHandler);
 

@@ -104,16 +104,7 @@ const UserSchema = new mongoose.Schema(
     // Comments and Reviews
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     reviewsAndRatings: [
-      {
-        animeId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Anime",
-          required: true,
-        },
-        rating: { type: Number, min: 0, max: 5 }, // Rating from 0 to 5
-        reviewText: { type: String }, // Optional review text
-        ratedAt: { type: Date, default: Date.now },
-      },
+      { type: mongoose.Schema.Types.ObjectId, ref: "ReviewsAndRatings" },
     ],
 
     // Follow System

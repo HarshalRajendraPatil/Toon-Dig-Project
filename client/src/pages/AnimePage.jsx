@@ -9,6 +9,7 @@ import { fetchAnimeDetails } from "../store/slices/animeSlice";
 import { addSeason, clearSeason } from "../store/slices/seasonSlice";
 import { fetchEpisodes, clearEpisodes } from "../store/slices/episodeSlice";
 import { addToFavorites, addToWatchlist } from "../store/slices/userSlice"; // Import actions for favorites and watchlist
+import RatingReviews from "../components/RatingReviews";
 
 const AnimePage = () => {
   const dispatch = useDispatch();
@@ -94,8 +95,11 @@ const AnimePage = () => {
   return (
     <div className="relative w-full min-h-screen bg-gray-900 text-gray-100">
       <div
-        className="relative w-full h-[60vh] overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: `url(${anime?.imageUrl?.url})` }}
+        className="relative w-full  overflow-hidden bg-cover bg-center px-3 py-10"
+        style={{
+          backgroundImage: `url(${anime?.imageUrl?.url})`,
+          backgroundPosition: "center",
+        }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-90"></div>
         <div className="relative z-10 flex flex-col justify-center items-center h-full">
@@ -115,7 +119,7 @@ const AnimePage = () => {
 
         {/* Buttons for Favorites and Watchlist */}
         {user && (
-          <div className="flex space-x-4 mb-6">
+          <div className="flex gap-4 justify-center items-center flex-wrap mb-6">
             <button
               className={`${
                 isFavorite ? "bg-gray-500" : "bg-purple-500"
@@ -135,6 +139,8 @@ const AnimePage = () => {
             </button>
           </div>
         )}
+
+        <RatingReviews animeId={anime._id} />
 
         {/* Season Selector */}
         <SeasonSelector

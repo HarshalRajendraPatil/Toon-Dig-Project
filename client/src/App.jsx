@@ -16,6 +16,7 @@ import AnimePage from "./pages/AnimePage";
 import AnimeSearchPage from "./pages/AnimeSearchPage";
 import ProfileApp from "./pages/ProfilePage";
 import StreamingPage from "./pages/StreamingPage";
+import ReviewsBreakdown from "./components/ReviewsBreakdown";
 
 function App() {
   return (
@@ -45,6 +46,10 @@ function App() {
           <Route path="/anime/:animeName" element={<AnimePage />} />
           <Route path="/profile" element={<ProfileApp />} />
           <Route path="/:animeName/stream" element={<StreamingPage />} />
+          <Route
+            path="/:animeName/all-reviews"
+            element={<ReviewsBreakdown />}
+          />
         </Route>
         <Route path="/register" element={<Signup />} />
         <Route path="/login" element={<Login />} />

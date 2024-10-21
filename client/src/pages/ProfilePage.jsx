@@ -23,7 +23,7 @@ import axiosInstance from "../config/axiosConfig";
 
 const ProfilePage = () => {
   const { user, token } = useSelector((state) => state.user);
-  console.log(user.stats.totalComments);
+  console.log(user);
 
   const dispatch = useDispatch();
 
