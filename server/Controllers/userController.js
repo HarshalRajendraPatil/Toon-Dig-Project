@@ -4,6 +4,7 @@ import CustomError from "../Utils/CustomError.js";
 import Anime from "../models/AnimeModel.js";
 import { isValidObjectId } from "mongoose";
 import cloudinary from "../services/cloudinary.js";
+import bcrypt from "bcrypt";
 
 export const getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -115,4 +116,26 @@ export const getWatchlist = catchAsync(async (req, res, next) => {
   const watchList = await User.findById(req.user.id).populate("watchlist");
 
   res.status(200).json({ status: "success", data: watchList.watchlist });
+});
+
+export const changePassword = catchAsync(async (req, res, next) => {
+  const { password, currentPassword } = req.body;
+
+  if (!password || password.trim().length < 8 || !currentPassword)
+    return next(new CustomError("Please enter a valid password", 400));
+
+  const user = await User.findOne({ _id: req?.user?._id });
+  if (!user) return next(new CustomError("User not authorized.", 400));
+
+  const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isPasswordMatch)
+    return next(new CustomError("Incorrect current password.", 400));
+
+  req.user.password = password;
+  const newUser = await req.user.save();
+
+  res.status(200).json({
+    status: "success",
+    data: newUser,
+  });
 });

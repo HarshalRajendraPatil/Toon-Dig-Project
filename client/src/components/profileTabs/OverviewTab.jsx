@@ -101,6 +101,12 @@ const OverviewTab = ({
         <p className="text-xl">
           <strong>Total Ratings Given:</strong> {user?.stats?.totalReviews || 0}
         </p>
+        <p className="text-xl">
+          <strong>Total Favorites:</strong> {user?.favorites?.length || 0}
+        </p>
+        <p className="text-xl">
+          <strong>Total Watchlist:</strong> {user?.watchlist?.length || 0}
+        </p>
       </div>
     </div>
   );
@@ -166,10 +172,6 @@ const OverviewTab = ({
               className="w-full p-3 bg-gray-700 text-white rounded-lg mt-2"
               placeholder="Enter new password"
             />
-            <p className="mt-2 text-sm text-gray-500">
-              Password Strength: {/* Add a password strength indicator here */}
-              <span className="text-green-400">Strong</span>
-            </p>
           </div>
         </div>
         <button

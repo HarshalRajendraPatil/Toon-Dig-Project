@@ -90,7 +90,7 @@ const Navbar = ({ userRole }) => {
                 Notifications
               </Link>
               <Link
-                to="/blog"
+                to="/blogs"
                 className="px-2 py-2 rounded-md text-sm font-medium hover:bg-gray-800"
                 onClick={() => setIsOpen(false)}
               >

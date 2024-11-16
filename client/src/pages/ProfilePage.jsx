@@ -22,8 +22,7 @@ import { toast } from "react-toastify";
 import axiosInstance from "../config/axiosConfig";
 
 const ProfilePage = () => {
-  const { user, token } = useSelector((state) => state.user);
-  console.log(user);
+  const { user, token } = useSelector((state) => state?.user);
 
   const dispatch = useDispatch();
 
@@ -58,9 +57,9 @@ const ProfilePage = () => {
   const saveProfile = async () => {
     try {
       const formData = new FormData();
-      formData.append("username", updatedUser.username);
-      formData.append("email", updatedUser.email);
-      formData.append("bio", updatedUser.bio || "");
+      formData.append("username", updatedUser?.username);
+      formData.append("email", updatedUser?.email);
+      formData.append("bio", updatedUser?.bio || "");
 
       if (profilePicture) {
         formData.append("profilePicture", profilePicture); // Add profile picture if available
@@ -88,16 +87,20 @@ const ProfilePage = () => {
   const changePassword = async () => {
     try {
       const { currentPassword, newPassword } = passwords;
-      const response = await axiosInstance.put(`/api/users/changePassword`, {
+      const response = await axiosInstance.put(`/api/users/change-password`, {
         currentPassword,
-        newPassword,
+        password: newPassword,
       });
 
       toast.success("Password changed successfully!");
       setPasswords({ currentPassword: "", newPassword: "" });
     } catch (error) {
       console.error("Error changing password:", error);
-      toast.error("Failed to change password. Please try again.");
+      console.log(error.response.data);
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to change password. Please try again."
+      );
     }
   };
 
@@ -128,6 +131,13 @@ const ProfilePage = () => {
         return <OverviewTab user={updatedUser} />;
     }
   };
+
+  if (!user)
+    return (
+      <h1 className="text-2xl text-center text-white min-w-full my-20">
+        Please login to view this page ☹️
+      </h1>
+    );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">

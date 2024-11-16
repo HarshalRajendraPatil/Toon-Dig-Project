@@ -83,9 +83,6 @@ const UserSchema = new mongoose.Schema(
 
     // New fields for tracking stats
     stats: {
-      watchlistCount: { type: Number, default: 0 }, // Number of anime in the watchlist
-      favoritesCount: { type: Number, default: 0 }, // Number of favorited anime
-      watchHistoryCount: { type: Number, default: 0 }, // Number of watched anime
       animeWatched: { type: Number, default: 0 }, // Total anime watched
       totalHoursSpent: { type: Number, default: 0 }, // Total hours spent watching anime
       totalReviews: { type: Number, default: 0 }, // Total reviews written by the user
@@ -129,7 +126,7 @@ const UserSchema = new mongoose.Schema(
 
     // Community and Interaction
     fanArt: [{ type: mongoose.Schema.Types.ObjectId, ref: "FanArt" }],
-    blogPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "BlogPost" }],
+    blogPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Blog" }],
 
     // Preferences and Settings
     darkMode: { type: Boolean, default: false },

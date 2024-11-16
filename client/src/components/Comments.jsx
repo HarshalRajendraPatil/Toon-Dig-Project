@@ -6,9 +6,8 @@ import axiosInstance from "../config/axiosConfig";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 const Comments = ({ episodeId }) => {
-  const authenticated = useSelector((state) => state.user.isAuthenticated);
-  const userId = useSelector((state) => state.user.user._id); // Get current user's ID
-  const dispatch = useDispatch();
+  const authenticated = useSelector((state) => state?.user?.isAuthenticated);
+  const userId = useSelector((state) => state?.user?.user?._id); // Get current user's ID
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [hasMore, setHasMore] = useState(true);
@@ -30,7 +29,7 @@ const Comments = ({ episodeId }) => {
       const res = await axiosInstance.get(
         `/api/comments/${episodeId}?page=${page}&limit=${COMMENTS_PER_PAGE}`
       );
-      const newComments = res.data.data;
+      const newComments = res?.data?.data;
 
       if (initialLoad) {
         setComments(newComments);
@@ -38,10 +37,12 @@ const Comments = ({ episodeId }) => {
         setComments((prevComments) => [...prevComments, ...newComments]);
       }
 
-      setHasMore(newComments.length === COMMENTS_PER_PAGE);
+      setHasMore(newComments?.length === COMMENTS_PER_PAGE);
     } catch (error) {
       if (authenticated)
-        toast.error(error.response?.data?.message || "Failed to load comments");
+        toast.error(
+          error?.response?.data?.message || "Failed to load comments"
+        );
     } finally {
       setLoading(false);
     }
@@ -62,13 +63,13 @@ const Comments = ({ episodeId }) => {
   // Handle comment submission
   const handlePostComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim()) return toast.error("Comment cannot be empty");
+    if (!newComment?.trim()) return toast.error("Comment cannot be empty");
 
     try {
       const res = await axiosInstance.post(`/api/comments/${episodeId}`, {
         commentText: newComment,
       });
-      const postedComment = res.data.data;
+      const postedComment = res?.data?.data;
 
       setComments((comments) => [postedComment, ...comments]);
       setNewComment("");
@@ -89,7 +90,7 @@ const Comments = ({ episodeId }) => {
 
       // Directly update comments state
       setComments((prevComments) =>
-        prevComments.filter((comment) => comment._id !== commentId)
+        prevComments?.filter((comment) => comment?._id !== commentId)
       );
 
       toast.success("Comment deleted");
@@ -100,18 +101,18 @@ const Comments = ({ episodeId }) => {
 
   // Handle comment edit
   const handleEditComment = async (commentId) => {
-    if (!editCommentText.trim()) return toast.error("Comment cannot be empty");
+    if (!editCommentText?.trim()) return toast.error("Comment cannot be empty");
 
     try {
       const res = await axiosInstance.put(`/api/comments/${commentId}`, {
         commentText: editCommentText,
       });
 
-      const updatedComment = res.data.data;
+      const updatedComment = res?.data?.data;
 
       setComments((comments) =>
         comments.map((comment) =>
-          comment._id === updatedComment._id ? updatedComment : comment
+          comment?._id === updatedComment?._id ? updatedComment : comment
         )
       );
 
@@ -144,7 +145,7 @@ const Comments = ({ episodeId }) => {
             <button
               type="submit"
               className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-indigo-500 hover:to-purple-600 text-white py-3 px-6 rounded-xl shadow-md transform transition duration-300 hover:scale-105 text-lg font-semibold"
-              disabled={!newComment.trim() || loading}
+              disabled={!newComment?.trim() || loading}
             >
               Post Comment
             </button>
@@ -155,9 +156,9 @@ const Comments = ({ episodeId }) => {
       {/* Display Comments */}
       <div className="comments-list bg-gray-900 p-6 rounded-lg shadow-xl">
         <h3 className="text-3xl font-bold mb-6 text-white">Comments</h3>
-        {comments.length > 0 ? (
+        {comments?.length > 0 ? (
           <div>
-            {comments.map((comment, index) => (
+            {comments?.map((comment, index) => (
               <div
                 key={index}
                 className="comment-item mb-6 p-4 bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300"
@@ -165,19 +166,18 @@ const Comments = ({ episodeId }) => {
                 <div className="comment-author flex items-center gap-3 mb-3">
                   <img
                     src={
-                      comment?.userId?.profilePicture?.url ||
-                      "/default-avatar.png"
+                      comment?.userId?.profilePicture?.url || "../profile.jpeg"
                     }
                     alt="avatar"
                     className="w-12 h-12 rounded-full shadow-lg"
                   />
                   <p className="font-bold text-lg text-white">
-                    {comment.userId.username}
+                    {comment?.userId?.username}
                   </p>
                 </div>
 
                 {/* Inline Comment Edit Mode */}
-                {editingCommentId === comment._id ? (
+                {editingCommentId === comment?._id ? (
                   <div className="comment-edit-body">
                     <textarea
                       value={editCommentText}
@@ -187,7 +187,7 @@ const Comments = ({ episodeId }) => {
                     />
                     <div className="mt-3 flex gap-4">
                       <button
-                        onClick={() => handleEditComment(comment._id)}
+                        onClick={() => handleEditComment(comment?._id)}
                         className="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-transform transform hover:scale-105"
                       >
                         Save
@@ -206,20 +206,20 @@ const Comments = ({ episodeId }) => {
                 ) : (
                   <div className="comment-body">
                     <p className="text-gray-300 text-lg">
-                      {comment.commentText}
+                      {comment?.commentText}
                     </p>
                     <p className="text-sm text-gray-500 mt-2">
-                      {new Date(comment.createdAt).toLocaleString()}
+                      {new Date(comment?.createdAt).toLocaleString()}
                     </p>
 
                     {/* Edit and Delete Buttons (Visible only to the comment author) */}
-                    {comment.userId._id === userId && (
+                    {comment?.userId?._id === userId && (
                       <div className="mt-2 flex gap-4">
                         {/* Edit Comment Button */}
                         <button
                           onClick={() => {
-                            setEditingCommentId(comment._id);
-                            setEditCommentText(comment.commentText); // Load existing comment text into state
+                            setEditingCommentId(comment?._id);
+                            setEditCommentText(comment?.commentText); // Load existing comment text into state
                           }}
                           className="text-blue-500 hover:underline font-semibold text-lg"
                         >
@@ -228,7 +228,7 @@ const Comments = ({ episodeId }) => {
 
                         {/* Delete Comment Button */}
                         <button
-                          onClick={() => handleDeleteComment(comment._id)}
+                          onClick={() => handleDeleteComment(comment?._id)}
                           className="text-red-500 hover:underline font-semibold text-lg"
                         >
                           Delete
@@ -253,7 +253,7 @@ const Comments = ({ episodeId }) => {
             {/* Infinite Scroll */}
             {infiniteScrollEnabled && (
               <InfiniteScroll
-                dataLength={comments.length}
+                dataLength={comments?.length}
                 next={fetchMoreComments}
                 hasMore={hasMore}
                 loader={<h4 className="text-center text-white">Loading...</h4>}

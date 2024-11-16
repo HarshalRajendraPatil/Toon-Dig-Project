@@ -9,6 +9,7 @@ import {
   addToFovorites,
   getFavorites,
   getWatchlist,
+  changePassword,
 } from "../Controllers/userController.js";
 
 const router = express.Router();
@@ -30,5 +31,7 @@ router.get("/:userId", getUser);
 router.put("/", updateUser);
 
 router.delete("/", deleteUser);
+
+router.put("/change-password", changePassword);
 
 export default router;

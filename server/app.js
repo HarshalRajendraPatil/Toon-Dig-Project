@@ -13,6 +13,7 @@ import seasonManagementRoutes from "./Routes/seasonManagementRoute.js";
 import episodeManagementRoutes from "./Routes/episodeManagementRoute.js";
 import commentManagementRoutes from "./Routes/commentRoute.js";
 import reviewAndRatingsManagementRoutes from "./Routes/ReviewsAndRatingsRoute.js";
+import blogManagementRoutes from "./Routes/blogManagementRoutes.js";
 
 const app = express();
 config({ path: "./.env" });
@@ -30,7 +31,7 @@ app.use(morgan("dev"));
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 
 app.use("/api/auth", authRoutes);
-app.use("/api/users/", userRoutes);
+app.use("/api/users", userRoutes);
 app.use(
   "/api/admin",
   animeManagementRoutes,
@@ -39,6 +40,7 @@ app.use(
 );
 app.use("/api/comments", commentManagementRoutes);
 app.use("/api/reviews", reviewAndRatingsManagementRoutes);
+app.use("/api/blogs", blogManagementRoutes);
 
 app.use(errorHandler);
 

@@ -8,8 +8,8 @@ import { Link } from "react-router-dom";
 
 const RatingReviews = ({ animeId }) => {
   const [reviews, setReviews] = useState([]);
-  const anime = useSelector((state) => state.anime.anime);
-  const user = useSelector((state) => state.user.user);
+  const anime = useSelector((state) => state?.anime?.anime);
+  const user = useSelector((state) => state?.user?.user);
   const [ratingStats, setRatingStats] = useState(null);
   const [userRating, setUserRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
@@ -19,7 +19,7 @@ const RatingReviews = ({ animeId }) => {
   const [isEditing, setIsEditing] = useState(false); // State for editing
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [visibleReviews, setVisibleReviews] = useState([]);
-  let title = anime.title.split(" ").join("-");
+  let title = anime?.title?.split(" ")?.join("-");
 
   // Fetch reviews and rating stats
   useEffect(() => {
@@ -30,17 +30,17 @@ const RatingReviews = ({ animeId }) => {
         const result = await axiosInstance.get(`/api/reviews/anime/${animeId}`);
 
         // Assuming the API returns an object with 'ratingStats' and 'reviews'
-        setRatingStats(result.data.data.rating);
-        setReviews(result.data.data);
+        setRatingStats(result?.data?.data?.rating);
+        setReviews(result?.data?.data);
 
         // Check if the logged-in user has already reviewed this anime
-        const userReview = result.data.data.find(
-          (review) => review.userId._id === user._id
+        const userReview = result?.data?.data?.find(
+          (review) => review?.userId?._id === user?._id
         );
         setUserHasReviewed(Boolean(userReview));
 
         // Set initial reviews to show (3 by default)
-        setVisibleReviews(result.data.data.slice(0, 3));
+        setVisibleReviews(result?.data?.data?.slice(0, 3));
       } catch (error) {
         console.error("Error fetching rating and reviews", error);
         toast.error("Failed to fetch the reviews.");
@@ -50,7 +50,7 @@ const RatingReviews = ({ animeId }) => {
     };
 
     fetchRatingAndReviews();
-  }, [animeId, user._id]);
+  }, [animeId, user?._id]);
 
   // Handle review submission
   const handleReviewSubmit = async (e) => {
@@ -76,8 +76,8 @@ const RatingReviews = ({ animeId }) => {
 
       // Fetch the updated reviews after submission or edit
       const result = await axiosInstance.get(`/api/reviews/anime/${animeId}`);
-      setReviews(result.data.data);
-      setVisibleReviews(result.data.data.slice(0, 3)); // Show only 3 reviews initially
+      setReviews(result?.data?.data);
+      setVisibleReviews(result?.data?.data?.slice(0, 3)); // Show only 3 reviews initially
       setUserRating(0); // Clear the form after submission
       setReviewText("");
       setIsEditing(false); // Reset editing state
@@ -99,8 +99,8 @@ const RatingReviews = ({ animeId }) => {
 
       // Fetch the updated reviews after deletion
       const result = await axiosInstance.get(`/api/reviews/anime/${animeId}`);
-      setReviews(result.data.data);
-      setVisibleReviews(result.data.data.slice(0, 3)); // Show only 3 reviews initially
+      setReviews(result?.data?.data);
+      setVisibleReviews(result?.data?.data?.slice(0, 3)); // Show only 3 reviews initially
       setUserHasReviewed(false); // Allow user to submit another review
     } catch (error) {
       console.error("Error deleting review", error);
@@ -111,9 +111,9 @@ const RatingReviews = ({ animeId }) => {
   // Handle editing a review
   const handleEditReview = (review) => {
     setIsEditing(true);
-    setEditingReviewId(review._id);
-    setUserRating(review.rating);
-    setReviewText(review.reviewText);
+    setEditingReviewId(review?._id);
+    setUserRating(review?.rating);
+    setReviewText(review?.reviewText);
   };
 
   // Handle showing all reviews
@@ -199,7 +199,7 @@ const RatingReviews = ({ animeId }) => {
         <h3 className="text-2xl font-semibold text-purple-400 mb-4">
           User Reviews
         </h3>
-        {visibleReviews.length === 0 ? (
+        {visibleReviews?.length === 0 ? (
           <p className="text-gray-400">
             No reviews yet. Be the first to review this anime!
           </p>
@@ -207,7 +207,7 @@ const RatingReviews = ({ animeId }) => {
           <ul className="space-y-6">
             {visibleReviews.map((review) => (
               <li
-                key={review._id}
+                key={review?._id}
                 className="bg-gray-900 p-6 rounded-lg shadow-md"
               >
                 <div className="flex justify-between flex-wrap items-center mb-4 gap-2">
@@ -216,27 +216,27 @@ const RatingReviews = ({ animeId }) => {
                       src={
                         review.userId?.profilePicture?.url || "../profile.jpeg"
                       }
-                      alt={review.userId?.username}
+                      alt={review?.userId?.username}
                       className="h-10 w-10 rounded-full object-cover"
                     />
                     <p className="text-white font-semibold text-lg">
-                      {review.userId?.username}
+                      {review?.userId?.username}
                     </p>
                   </div>
                   <div className="flex items-center space-x-1">
                     <h4 className="text-2xl font-bold text-yellow-400">
-                      {review.rating}
+                      {review?.rating}
                     </h4>
                     <FaStar className="h-6 w-6 text-yellow-400" />
                   </div>
                 </div>
-                <p className="text-gray-300 text-xl">{review.reviewText}</p>
+                <p className="text-gray-300 text-xl">{review?.reviewText}</p>
                 <p className="text-gray-500 text-md mt-2">
-                  Reviewed on {new Date(review.createdAt).toLocaleString()}
+                  Reviewed on {new Date(review?.createdAt).toLocaleString()}
                 </p>
 
                 {/* Show Edit and Delete buttons for the user's review */}
-                {user._id === review.userId._id && (
+                {user?._id === review?.userId?._id && (
                   <div className="mt-4 flex space-x-4">
                     <button
                       onClick={() => handleEditReview(review)}
@@ -245,7 +245,7 @@ const RatingReviews = ({ animeId }) => {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDeleteReview(review._id)}
+                      onClick={() => handleDeleteReview(review?._id)}
                       className="text-red-400 hover:underline"
                     >
                       Delete
