@@ -1,34 +1,68 @@
 import React, { useEffect, useState } from "react";
 import VideoPlayer from "../components/VideoPlayer";
-import Comments from "../components/Comments"; // Import the Comments component
+import Comments from "../components/Comments";
 import { useSelector } from "react-redux";
 import axiosInstance from "../config/axiosConfig";
 import { toast } from "react-toastify";
 
 const StreamingPage = () => {
   const [activeEpisode, setActiveEpisode] = useState({});
+  const [episodes, setEpisodes] = useState([]); // List of episodes in the selected season
   const [loading, setLoading] = useState(false);
-  const seasonId = useSelector((state) => state.season.seasonInfo._id);
+  const [selectedSeason, setSelectedSeason] = useState(null); // Currently selected season
+
   const animeDetails = useSelector((state) => state.anime.anime);
   const episodeId = useSelector((state) => state?.episode?.currentEpisodeId);
+  console.log(activeEpisode);
+
+  // Fetch episodes for the selected season
+  useEffect(() => {
+    if (!selectedSeason) return;
+
+    const fetchEpisodes = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/api/admin/season/${selectedSeason}/episode`
+        );
+        setEpisodes(response.data.data);
+        setActiveEpisode(response.data.data[0]); // Default to the first episode
+      } catch (error) {
+        console.error("Failed to fetch episodes:", error);
+        toast.error("Failed to load episodes.");
+      }
+    };
+
+    fetchEpisodes();
+  }, [selectedSeason]);
+
+  // Fetch the active episode's details
+  useEffect(() => {
+    if (!episodeId || !selectedSeason) return;
+
+    const fetchEpisode = async () => {
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get(
+          `/api/admin/season/${selectedSeason}/episode/${episodeId}`
+        );
+        setActiveEpisode(response.data.data);
+      } catch (error) {
+        console.error("Failed to load the episode:", error);
+        toast.error("Failed to load the episode.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEpisode();
+  }, [episodeId, selectedSeason]);
 
   useEffect(() => {
-    setLoading(true);
-    try {
-      const fetchEpisode = async () => {
-        const episode = await axiosInstance.get(
-          `/api/admin/season/${seasonId}/episode/${episodeId}`
-        );
-        setActiveEpisode(episode.data.data);
-      };
-      fetchEpisode();
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to load the episode.");
-    } finally {
-      setLoading(false);
+    // Set default season on component mount
+    if (animeDetails?.seasons?.length) {
+      setSelectedSeason(animeDetails.seasons[0]._id);
     }
-  }, [episodeId]);
+  }, [animeDetails]);
 
   return (
     <div className="streaming-page bg-gray-900 min-h-screen text-white">
@@ -60,37 +94,76 @@ const StreamingPage = () => {
                 {animeDetails?.genres?.join(", ") || "Unknown Genre"}
               </div>
               <div className="rating text-yellow-400 flex items-center text-sm md:text-lg">
-                ⭐ {animeDetails?.rating || 0}/5
+                ⭐ {animeDetails?.averageRating || 0}/5
               </div>
               <div className="year-released text-white text-sm md:text-base">
                 Year: {animeDetails?.releaseDate?.split("-")[0] || "Unknown"}
-              </div>
-              <div className="episodes-count text-white text-sm md:text-base">
-                Seasons: {animeDetails?.seasons?.length || "Unknown"}
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content - Video in Theater Mode */}
-      <div className="content-container flex flex-col gap-6 p-4 md:p-6">
+      {/* Season Selector */}
+      <div className="season-selector p-4 md:p-6">
+        <label
+          htmlFor="season-select"
+          className="text-white text-lg font-bold mb-2"
+        >
+          Select Season:
+        </label>
+        <select
+          id="season-select"
+          value={selectedSeason}
+          onChange={(e) => setSelectedSeason(e.target.value)}
+          className="bg-gray-800 text-white rounded-md p-2 shadow-md w-full md:w-auto"
+        >
+          {animeDetails?.seasons?.map((season) => (
+            <option key={season._id} value={season._id}>
+              {season.title || `Season ${season.number}`}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Main Content */}
+      <div className="content-container flex flex-col md:flex-row gap-6 p-4 md:p-6">
         {/* Video Player Section */}
-        <div className="video-section w-full bg-black rounded-lg overflow-hidden shadow-lg">
+        <div className="video-section w-full md:w-3/4 bg-black rounded-lg overflow-hidden shadow-lg">
           <VideoPlayer episode={activeEpisode} />
         </div>
 
-        {/* Episode Info */}
-        <div className="episode-info bg-gray-800 p-4 md:p-6 rounded-lg shadow-md">
-          <h2 className="text-xl md:text-2xl font-bold">
-            {activeEpisode?.title}
-          </h2>
-          <p className="mt-2 text-gray-300">{activeEpisode?.description}</p>
+        {/* Episode List Section */}
+        <div className="episode-list w-full md:w-1/4 bg-gray-800 rounded-lg p-4 shadow-md overflow-y-auto max-h-[80vh]">
+          <h3 className="text-lg font-bold mb-4">Episodes</h3>
+          <ul className="space-y-3">
+            {episodes.map((episode) => (
+              <li
+                key={episode._id}
+                onClick={() => setActiveEpisode(episode)}
+                className={`cursor-pointer p-3 rounded-lg hover:bg-gray-700 ${
+                  episode._id === activeEpisode?._id
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-700 text-gray-300"
+                }`}
+              >
+                Episode {episode.number}: {episode.title}
+              </li>
+            ))}
+          </ul>
         </div>
-
-        {/* Comments Section */}
-        <Comments episodeId={episodeId} />
       </div>
+
+      {/* Episode Info */}
+      <div className="episode-info bg-gray-800 p-4 md:p-6 rounded-lg shadow-md mt-4">
+        <h2 className="text-xl md:text-2xl font-bold">
+          {activeEpisode?.title}
+        </h2>
+        <p className="mt-2 text-gray-300">{activeEpisode?.description}</p>
+      </div>
+
+      {/* Comments Section */}
+      {activeEpisode && <Comments episodeId={activeEpisode?._id} />}
     </div>
   );
 };

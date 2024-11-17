@@ -140,8 +140,6 @@ const AnimePage = () => {
           </div>
         )}
 
-        <RatingReviews animeId={anime._id} />
-
         {/* Season Selector */}
         <SeasonSelector
           seasons={anime.seasons}
@@ -207,6 +205,9 @@ const AnimePage = () => {
               <EpisodeList episodes={episodes} />
             )}
           </>
+        )}
+        {anime?.seasons?.length === 0 && seasonInfo?.episodes?.length === 0 && (
+          <RatingReviews animeId={anime._id} />
         )}
       </div>
     </div>
