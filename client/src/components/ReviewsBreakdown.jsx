@@ -4,7 +4,8 @@ import LoadingSpinner from "./LoadingSpinner";
 import axiosInstance from "../config/axiosConfig";
 import { toast } from "react-toastify";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteReview } from "../store/slices/userSlice.js";
 
 const ReviewsBreakdown = () => {
   const anime = useSelector((state) => state.anime.anime);
@@ -21,6 +22,19 @@ const ReviewsBreakdown = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRating, setSelectedRating] = useState(null);
+  const dispatch = useDispatch();
+
+  const handleDeleteReview = async (reviewId) => {
+    setIsLoading(true);
+    try {
+      await dispatch(deleteReview(reviewId)).unwrap();
+      toast.success("Review deleted successfully.");
+    } catch (error) {
+      toast.error(error.message || "Failed to delete the review.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const calculateRatingStats = (reviewsArray) => {
     const stats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -57,7 +71,7 @@ const ReviewsBreakdown = () => {
     };
 
     fetchInitialReviews();
-  }, [anime]);
+  }, [anime, reviews]);
 
   const fetchMoreReviews = async () => {
     try {

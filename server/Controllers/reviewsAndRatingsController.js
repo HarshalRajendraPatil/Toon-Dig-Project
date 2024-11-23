@@ -1,3 +1,4 @@
+import Anime from "../models/AnimeModel.js";
 import ReviewsAndRatings from "../models/ReviewsAndRatingsModel.js";
 import catchAsync from "../Utils/catchAsync.js";
 import CustomError from "../Utils/CustomError.js";
@@ -17,13 +18,16 @@ export const createReview = catchAsync(async (req, res, next) => {
     reviewText,
   });
 
+  const anime = await Anime.findById(animeId);
+  anime.reviewsAndRating.push(newReview._id);
+  await anime.save();
   req.user.reviewsAndRatings.push(newReview);
   req.user.stats.totalReviews += 1;
-  await req.user.save();
+  const user = await req.user.save();
 
   res.status(201).json({
     success: true,
-    data: newReview,
+    data: user,
   });
 });
 
@@ -52,9 +56,11 @@ export const updateReview = async (req, res, next) => {
 
   await review.save();
 
+  const user = req.user;
+
   res.status(200).json({
     success: true,
-    data: review,
+    data: user,
   });
 };
 
@@ -78,12 +84,13 @@ export const deleteReview = async (req, res, next) => {
   req.user.reviewsAndRatings = req.user.reviewsAndRatings.filter(
     (id) => id.toString() !== review._id.toString()
   );
-  if (!(req.user.stats.totalReviews === 0)) req.user.stats.totalReviews -= 1;
-  await req.user.save();
 
-  res.status(204).json({
+  req.user.stats.totalReviews = req.user.reviewsAndRatings.length;
+  const user = await req.user.save();
+
+  res.status(200).json({
     success: true,
-    data: "",
+    data: user,
   });
 };
 export const getReviewsByAnime = async (req, res, next) => {

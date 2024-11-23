@@ -13,7 +13,6 @@ const StreamingPage = () => {
 
   const animeDetails = useSelector((state) => state.anime.anime);
   const episodeId = useSelector((state) => state?.episode?.currentEpisodeId);
-  console.log(activeEpisode);
 
   // Fetch episodes for the selected season
   useEffect(() => {
@@ -127,14 +126,24 @@ const StreamingPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="content-container flex flex-col md:flex-row gap-6 p-4 md:p-6">
+      <div className="content-container flex flex-col lg:flex-row gap-6 p-4 md:p-6 lg:items-stretch">
         {/* Video Player Section */}
-        <div className="video-section w-full md:w-3/4 bg-black rounded-lg overflow-hidden shadow-lg">
-          <VideoPlayer episode={activeEpisode} />
+        <div className="flex flex-col">
+          <div className="video-section w-full bg-black rounded-lg overflow-hidden shadow-lg">
+            <VideoPlayer episode={activeEpisode} />
+          </div>
+
+          {/* Episode Info */}
+          <div className="episode-info bg-gray-800 p-4 md:p-6 rounded-lg shadow-md mt-4">
+            <h2 className="text-xl md:text-2xl font-bold">
+              {activeEpisode?.title}
+            </h2>
+            <p className="mt-2 text-gray-300">{activeEpisode?.description}</p>
+          </div>
         </div>
 
         {/* Episode List Section */}
-        <div className="episode-list w-full md:w-1/4 bg-gray-800 rounded-lg p-4 shadow-md overflow-y-auto max-h-[80vh]">
+        <div className="episode-list w-full lg:w-1/4 bg-gray-800 rounded-lg p-4 shadow-md overflow-y-auto max-h-[100vh]">
           <h3 className="text-lg font-bold mb-4">Episodes</h3>
           <ul className="space-y-3">
             {episodes.map((episode) => (
@@ -152,14 +161,6 @@ const StreamingPage = () => {
             ))}
           </ul>
         </div>
-      </div>
-
-      {/* Episode Info */}
-      <div className="episode-info bg-gray-800 p-4 md:p-6 rounded-lg shadow-md mt-4">
-        <h2 className="text-xl md:text-2xl font-bold">
-          {activeEpisode?.title}
-        </h2>
-        <p className="mt-2 text-gray-300">{activeEpisode?.description}</p>
       </div>
 
       {/* Comments Section */}

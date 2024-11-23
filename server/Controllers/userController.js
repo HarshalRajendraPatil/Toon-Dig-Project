@@ -74,11 +74,11 @@ export const addToFovorites = catchAsync(async (req, res, next) => {
     req.user.favorites = req.user.favorites.filter(
       (id) => id.toString() !== animeId.toString()
     );
-    req.user.stats.favoritesCount -= 1;
   } else {
     req.user.favorites.push(animeId);
-    req.user.stats.favoritesCount += 1;
   }
+
+  req.user.stats.favoritesCount = req.user.favorites.length;
 
   const user = await req.user.save();
   res.status(200).json({ status: "success", data: user });
@@ -96,11 +96,11 @@ export const addToWatchlist = catchAsync(async (req, res, next) => {
     req.user.watchlist = req.user.watchlist.filter(
       (id) => id.toString() !== animeId.toString()
     );
-    req.user.stats.watchlistCount -= 1;
   } else {
     req.user.watchlist.push(animeId);
-    req.user.stats.watchlistCount += 1;
   }
+
+  req.user.stats.watchlistCount = req.user.watchlist.length;
 
   const user = await req.user.save();
   res.status(200).json({ status: "success", data: user });

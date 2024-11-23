@@ -40,6 +40,47 @@ export const addToWatchlist = createAsyncThunk(
   }
 );
 
+// Async Thunk to add or update a review
+export const addReview = createAsyncThunk(
+  "user/addReview",
+  async ({ animeId, reviewId, reviewText, rating }, { rejectWithValue }) => {
+    try {
+      let response;
+
+      if (reviewId) {
+        // PUT request to update an existing review
+        response = await axiosInstance.put(`/api/reviews/${reviewId}`, {
+          reviewText,
+          rating,
+        });
+      } else {
+        // POST request to create a new review
+        response = await axiosInstance.post(`/api/reviews/anime/${animeId}`, {
+          reviewText,
+          rating,
+        });
+      }
+
+      return response.data.data; // The updated user data or success response
+    } catch (error) {
+      return rejectWithValue(error.response.data || "Something went wrong");
+    }
+  }
+);
+
+// Async Thunk to delete a review
+export const deleteReview = createAsyncThunk(
+  "user/deleteReview",
+  async (reviewId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.delete(`/api/reviews/${reviewId}`);
+      return response.data.data; // The updated user data or success response
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -68,7 +109,6 @@ const userSlice = createSlice({
       })
       .addCase(addToFavorites.fulfilled, (state, action) => {
         state.isLoading = false;
-        // You can add logic to update the user's favorites here if needed
         state.user = action.payload;
       })
       .addCase(addToFavorites.rejected, (state, action) => {
@@ -80,10 +120,31 @@ const userSlice = createSlice({
       })
       .addCase(addToWatchlist.fulfilled, (state, action) => {
         state.isLoading = false;
-        // You can add logic to update the user's watchlist here if needed
         state.user = action.payload;
       })
       .addCase(addToWatchlist.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(addReview.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(addReview.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+      })
+      .addCase(addReview.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteReview.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(deleteReview.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+      })
+      .addCase(deleteReview.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });

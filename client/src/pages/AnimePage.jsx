@@ -206,9 +206,10 @@ const AnimePage = () => {
             )}
           </>
         )}
-        {anime?.seasons?.length === 0 && seasonInfo?.episodes?.length === 0 && (
-          <RatingReviews animeId={anime._id} />
-        )}
+        {!(anime?.seasons?.length === 0) &&
+          !(seasonInfo?.episodes?.length === 0) && (
+            <RatingReviews animeId={anime._id} animeName={animeName} />
+          )}
       </div>
     </div>
   );

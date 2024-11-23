@@ -21,6 +21,7 @@ import ReviewsBreakdown from "./components/ReviewsBreakdown";
 import BlogPage from "./pages/BlogsPage";
 import BlogDetailPage from "./pages/BlogDetailPage";
 import CreateOrEditBlog from "./forms/CreateOrEditBlogForm";
+import PageNotFound from "./pages/PageNotFound";
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
           />
           <Route path="/blogs" element={<BlogPage />} />
           <Route path="/blogs/:id" element={<BlogDetailPage />} />
+          <Route path="*" element={<PageNotFound />} />
         </Route>
         <Route path="/register" element={<Signup />} />
         <Route path="/login" element={<Login />} />

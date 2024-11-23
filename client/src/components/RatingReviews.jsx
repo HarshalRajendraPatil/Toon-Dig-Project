@@ -1,123 +1,139 @@
 import React, { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
-import LoadingSpinner from "./LoadingSpinner"; // Assuming you have a loading spinner component
-import axiosInstance from "../config/axiosConfig"; // Your axios instance with pre-configured settings
-import { useSelector } from "react-redux";
+import LoadingSpinner from "./LoadingSpinner";
+import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import { addReview, deleteReview } from "../store/slices/userSlice.js";
+import { fetchAnimeDetails } from "../store/slices/animeSlice";
+import axiosInstance from "../config/axiosConfig";
 
-const RatingReviews = ({ animeId }) => {
-  const [reviews, setReviews] = useState([]);
-  const anime = useSelector((state) => state?.anime?.anime);
-  const user = useSelector((state) => state?.user?.user);
-  const [ratingStats, setRatingStats] = useState(null);
+const RatingReviews = ({ animeId, animeName = "" }) => {
+  const dispatch = useDispatch();
+
+  const [reviews, setReveiws] = useState([]);
+  const user = useSelector((state) => state.user.user);
   const [userRating, setUserRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userHasReviewed, setUserHasReviewed] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // State for editing
+  const [isEditing, setIsEditing] = useState(false);
   const [editingReviewId, setEditingReviewId] = useState(null);
+  const [userHasReviewed, setUserHasReviewed] = useState(false);
   const [visibleReviews, setVisibleReviews] = useState([]);
-  let title = anime?.title?.split(" ")?.join("-");
 
-  // Fetch reviews and rating stats
+  const title = reviews?.anime?.title?.split(" ")?.join("-");
+
   useEffect(() => {
-    const fetchRatingAndReviews = async () => {
-      setIsLoading(true);
+    setIsLoading(true);
+    async function fetchReviews() {
       try {
-        // Fetching both reviews and rating stats from the same API
-        const result = await axiosInstance.get(`/api/reviews/anime/${animeId}`);
-
-        // Assuming the API returns an object with 'ratingStats' and 'reviews'
-        setRatingStats(result?.data?.data?.rating);
-        setReviews(result?.data?.data);
-
-        // Check if the logged-in user has already reviewed this anime
-        const userReview = result?.data?.data?.find(
-          (review) => review?.userId?._id === user?._id
+        const reviews = await axiosInstance.get(
+          `/api/reviews/anime/${animeId}`
         );
-        setUserHasReviewed(Boolean(userReview));
-
-        // Set initial reviews to show (3 by default)
-        setVisibleReviews(result?.data?.data?.slice(0, 3));
+        setReveiws(reviews.data.data);
       } catch (error) {
-        console.error("Error fetching rating and reviews", error);
-        toast.error("Failed to fetch the reviews.");
+        console.log(error);
+        toast.error(
+          error?.response?.data?.error || "Failed to fetch the reveiws"
+        );
       } finally {
         setIsLoading(false);
       }
-    };
+    }
 
-    fetchRatingAndReviews();
-  }, [animeId, user?._id]);
+    fetchReviews();
+  }, []);
 
-  // Handle review submission
+  useEffect(() => {
+    if (user && reviews.length > 0) {
+      const userReview = reviews.find(
+        (review) => review.userId._id.toString() === user._id.toString()
+      );
+
+      const otherReviews = reviews
+        .filter(
+          (review) => review.userId._id.toString() !== user._id.toString()
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+      // If the logged-in user has reviewed, place their review at the top
+      if (userReview) {
+        setVisibleReviews([userReview, ...otherReviews.slice(0, 2)]);
+      } else {
+        setVisibleReviews(otherReviews.slice(0, 3));
+      }
+
+      setUserHasReviewed(Boolean(userReview));
+    }
+  }, [user, reviews]);
+
+  console.log(visibleReviews);
+
+  const handleEditReview = (review) => {
+    setIsEditing(true);
+    setEditingReviewId(review._id);
+    setUserRating(review.rating); // Pre-fill the rating
+    setReviewText(review.reviewText); // Pre-fill the review text
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    if (!userRating || !reviewText) return; // Ensure rating and review are provided
+    if (!userRating || !reviewText) return; // Ensure both fields are filled
+
     setIsSubmitting(true);
+
     try {
       if (isEditing) {
-        // Editing an existing review
-        await axiosInstance.put(`/api/reviews/${editingReviewId}`, {
-          rating: userRating,
-          reviewText,
-        });
+        // Dispatch update action
+        await dispatch(
+          addReview({
+            animeId,
+            reviewId: editingReviewId,
+            reviewText,
+            rating: userRating,
+          })
+        ).unwrap();
         toast.success("Review updated successfully.");
       } else {
-        // Submitting a new review
-        await axiosInstance.post(`/api/reviews/anime/${animeId}`, {
-          rating: userRating,
-          reviewText,
-        });
+        // Dispatch create action
+        await dispatch(
+          addReview({ animeId, reviewText, rating: userRating })
+        ).unwrap();
         toast.success("Review posted successfully.");
       }
 
-      // Fetch the updated reviews after submission or edit
-      const result = await axiosInstance.get(`/api/reviews/anime/${animeId}`);
-      setReviews(result?.data?.data);
-      setVisibleReviews(result?.data?.data?.slice(0, 3)); // Show only 3 reviews initially
-      setUserRating(0); // Clear the form after submission
+      // Reset form state
+      setUserRating(0);
       setReviewText("");
-      setIsEditing(false); // Reset editing state
+      setIsEditing(false);
       setEditingReviewId(null);
-      setUserHasReviewed(true); // Mark that the user has reviewed
+      setUserHasReviewed(true); // Prevent further submissions
     } catch (error) {
-      console.error("Error submitting review", error);
-      toast.error("Failed to post your review");
+      toast.error(error.message || "Failed to post your review.");
     } finally {
+      dispatch(fetchAnimeDetails(animeName)); // Update anime details
       setIsSubmitting(false);
     }
   };
 
   // Handle deleting a review
   const handleDeleteReview = async (reviewId) => {
+    setIsLoading(true);
     try {
-      await axiosInstance.delete(`/api/reviews/${reviewId}`);
+      await dispatch(deleteReview(reviewId)).unwrap();
       toast.success("Review deleted successfully.");
-
-      // Fetch the updated reviews after deletion
-      const result = await axiosInstance.get(`/api/reviews/anime/${animeId}`);
-      setReviews(result?.data?.data);
-      setVisibleReviews(result?.data?.data?.slice(0, 3)); // Show only 3 reviews initially
-      setUserHasReviewed(false); // Allow user to submit another review
+      setUserHasReviewed(false); // Allow the user to submit another review
     } catch (error) {
-      console.error("Error deleting review", error);
-      toast.error("Failed to delete review");
+      toast.error(error.message || "Failed to delete the review.");
+    } finally {
+      dispatch(fetchAnimeDetails(animeName));
+      setIsLoading(false);
     }
   };
-
-  // Handle editing a review
-  const handleEditReview = (review) => {
-    setIsEditing(true);
-    setEditingReviewId(review?._id);
-    setUserRating(review?.rating);
-    setReviewText(review?.reviewText);
-  };
-
-  // Handle showing all reviews
-  const handleShowAllReviews = () => {};
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -129,13 +145,12 @@ const RatingReviews = ({ animeId }) => {
           <h2 className="text-4xl font-semibold text-purple-500">
             Rating & Reviews
           </h2>
-          <p className="text-gray-300 text-lg mt-2">
-            {reviews?.length || 0} Reviews
-          </p>
+          <p className="text-gray-300 text-lg mt-2">{reviews.length} Reviews</p>
         </div>
         <div className="flex items-center space-x-1">
           <h3 className="text-2xl font-bold text-yellow-400">
-            {anime?.averageRating?.toFixed(1) || "0.0"}
+            {reviews?.reduce((acc, r) => acc + r.rating, 0) / reviews.length ||
+              "0.0"}
           </h3>
           <FaStar className="h-5 w-5 text-yellow-400" />
           <p className="text-gray-300 text-lg">/ 5</p>
@@ -143,7 +158,7 @@ const RatingReviews = ({ animeId }) => {
       </div>
 
       {/* Review Submission Form */}
-      {user && (!userHasReviewed || isEditing) && (
+      {user && (isEditing || !userHasReviewed) && (
         <form
           onSubmit={handleReviewSubmit}
           className="mt-6 bg-gray-900 p-6 rounded-lg"
@@ -199,15 +214,15 @@ const RatingReviews = ({ animeId }) => {
         <h3 className="text-2xl font-semibold text-purple-400 mb-4">
           User Reviews
         </h3>
-        {visibleReviews?.length === 0 ? (
+        {visibleReviews.length === 0 ? (
           <p className="text-gray-400">
             No reviews yet. Be the first to review this anime!
           </p>
         ) : (
           <ul className="space-y-6">
-            {visibleReviews.map((review) => (
+            {visibleReviews?.map((review) => (
               <li
-                key={review?._id}
+                key={review._id}
                 className="bg-gray-900 p-6 rounded-lg shadow-md"
               >
                 <div className="flex justify-between flex-wrap items-center mb-4 gap-2">
@@ -216,27 +231,25 @@ const RatingReviews = ({ animeId }) => {
                       src={
                         review.userId?.profilePicture?.url || "../profile.jpeg"
                       }
-                      alt={review?.userId?.username}
+                      alt={review.userId?.username}
                       className="h-10 w-10 rounded-full object-cover"
                     />
                     <p className="text-white font-semibold text-lg">
-                      {review?.userId?.username}
+                      {review.userId?.username}
                     </p>
                   </div>
                   <div className="flex items-center space-x-1">
                     <h4 className="text-2xl font-bold text-yellow-400">
-                      {review?.rating}
+                      {review.rating}
                     </h4>
                     <FaStar className="h-6 w-6 text-yellow-400" />
                   </div>
                 </div>
-                <p className="text-gray-300 text-xl">{review?.reviewText}</p>
+                <p className="text-gray-300 text-xl">{review.reviewText}</p>
                 <p className="text-gray-500 text-md mt-2">
-                  Reviewed on {new Date(review?.createdAt).toLocaleString()}
+                  Reviewed on {new Date(review.createdAt).toLocaleString()}
                 </p>
-
-                {/* Show Edit and Delete buttons for the user's review */}
-                {user?._id === review?.userId?._id && (
+                {review?.userId?._id?.toString() === user?._id?.toString() && (
                   <div className="mt-4 flex space-x-4">
                     <button
                       onClick={() => handleEditReview(review)}
@@ -245,7 +258,7 @@ const RatingReviews = ({ animeId }) => {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDeleteReview(review?._id)}
+                      onClick={() => handleDeleteReview(review._id)}
                       className="text-red-400 hover:underline"
                     >
                       Delete
@@ -256,7 +269,6 @@ const RatingReviews = ({ animeId }) => {
             ))}
           </ul>
         )}
-
         <Link
           to={`/${title}/all-reviews`}
           className="text-purple-400 hover:underline mt-6 block"
