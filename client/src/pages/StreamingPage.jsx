@@ -6,43 +6,24 @@ import axiosInstance from "../config/axiosConfig";
 import { toast } from "react-toastify";
 
 const StreamingPage = () => {
+  const animeDetails = useSelector((state) => state?.anime?.anime);
+  const allEpisodesInfo = useSelector((state) => state.episode);
+  const seasonInfo = useSelector((state) => state?.season?.seasonInfo);
+
+  const episodeId = allEpisodesInfo?.currentEpisodeId;
   const [activeEpisode, setActiveEpisode] = useState({});
-  const [episodes, setEpisodes] = useState([]); // List of episodes in the selected season
   const [loading, setLoading] = useState(false);
-  const [selectedSeason, setSelectedSeason] = useState(null); // Currently selected season
-
-  const animeDetails = useSelector((state) => state.anime.anime);
-  const episodeId = useSelector((state) => state?.episode?.currentEpisodeId);
-
-  // Fetch episodes for the selected season
-  useEffect(() => {
-    if (!selectedSeason) return;
-
-    const fetchEpisodes = async () => {
-      try {
-        const response = await axiosInstance.get(
-          `/api/admin/season/${selectedSeason}/episode`
-        );
-        setEpisodes(response.data.data);
-        setActiveEpisode(response.data.data[0]); // Default to the first episode
-      } catch (error) {
-        console.error("Failed to fetch episodes:", error);
-        toast.error("Failed to load episodes.");
-      }
-    };
-
-    fetchEpisodes();
-  }, [selectedSeason]);
+  const episodes = allEpisodesInfo?.episodes;
 
   // Fetch the active episode's details
   useEffect(() => {
-    if (!episodeId || !selectedSeason) return;
+    if (!episodeId) return;
 
     const fetchEpisode = async () => {
       setLoading(true);
       try {
         const response = await axiosInstance.get(
-          `/api/admin/season/${selectedSeason}/episode/${episodeId}`
+          `/api/admin/season/${seasonInfo._id}/episode/${episodeId}`
         );
         setActiveEpisode(response.data.data);
       } catch (error) {
@@ -54,14 +35,7 @@ const StreamingPage = () => {
     };
 
     fetchEpisode();
-  }, [episodeId, selectedSeason]);
-
-  useEffect(() => {
-    // Set default season on component mount
-    if (animeDetails?.seasons?.length) {
-      setSelectedSeason(animeDetails.seasons[0]._id);
-    }
-  }, [animeDetails]);
+  }, [episodeId]);
 
   return (
     <div className="streaming-page bg-gray-900 min-h-screen text-white">
@@ -102,28 +76,6 @@ const StreamingPage = () => {
           </div>
         </div>
       </header>
-
-      {/* Season Selector */}
-      <div className="season-selector p-4 md:p-6">
-        <label
-          htmlFor="season-select"
-          className="text-white text-lg font-bold mb-2"
-        >
-          Select Season:
-        </label>
-        <select
-          id="season-select"
-          value={selectedSeason}
-          onChange={(e) => setSelectedSeason(e.target.value)}
-          className="bg-gray-800 text-white rounded-md p-2 shadow-md w-full md:w-auto"
-        >
-          {animeDetails?.seasons?.map((season) => (
-            <option key={season._id} value={season._id}>
-              {season.title || `Season ${season.number}`}
-            </option>
-          ))}
-        </select>
-      </div>
 
       {/* Main Content */}
       <div className="content-container flex flex-col lg:flex-row gap-6 p-4 md:p-6 lg:items-stretch">

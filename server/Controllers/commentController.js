@@ -90,11 +90,11 @@ export const deleteComment = catchAsync(async (req, res, next) => {
 
   if (req.user.stats.totalComments !== 0) req.user.stats.totalComments -= 1;
 
-  await req.user.save();
+  const user = await req.user.save();
 
-  res.status(204).json({
+  res.status(200).json({
     success: true,
-    data: "",
+    data: user,
   });
 });
 

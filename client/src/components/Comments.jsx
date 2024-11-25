@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setUser } from "../store/slices/userSlice.js";
 import { toast } from "react-toastify";
 import axiosInstance from "../config/axiosConfig";
+import { deleteComment } from "../store/slices/userSlice.js";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 const Comments = ({ episodeId }) => {
-  const authenticated = useSelector((state) => state?.user?.isAuthenticated);
   const userId = useSelector((state) => state?.user?.user?._id); // Get current user's ID
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -14,50 +13,59 @@ const Comments = ({ episodeId }) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(false);
-  const COMMENTS_PER_PAGE = 5; // Number of comments to fetch per page
+  const COMMENTS_PER_PAGE = 3; // Number of comments to fetch per page
   const [editingCommentId, setEditingCommentId] = useState(null); // ID of the comment being edited
   const [editCommentText, setEditCommentText] = useState(""); // Edited comment text
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    if (!episodeId) return;
     fetchComments();
   }, [episodeId]);
 
-  // Fetch initial comments
-  const fetchComments = async (initialLoad = true) => {
+  // Updated handleLoadMoreClick
+  const handleLoadMoreClick = () => {
+    setInfiniteScrollEnabled(true);
+    const nextPage = page + 1; // Calculate the next page
+    setPage(nextPage); // Update the page state
+    fetchComments(false, nextPage); // Pass the next page directly to fetchComments
+  };
+
+  // Updated fetchMoreComments for InfiniteScroll
+  const fetchMoreComments = async () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchComments(false, nextPage);
+  };
+
+  // Updated fetchComments to accept a page parameter
+  const fetchComments = async (initialLoad = true, fetchPage = page) => {
     try {
       setLoading(true);
       const res = await axiosInstance.get(
-        `/api/comments/${episodeId}?page=${page}&limit=${COMMENTS_PER_PAGE}`
+        `/api/comments/${episodeId}?page=${fetchPage}&limit=${COMMENTS_PER_PAGE}`
       );
       const newComments = res?.data?.data;
 
       if (initialLoad) {
         setComments(newComments);
       } else {
-        setComments((prevComments) => [...prevComments, ...newComments]);
+        setComments((prevComments) => {
+          // Only add unique comments by checking IDs
+          const uniqueComments = newComments.filter(
+            (newComment) =>
+              !prevComments.some((comment) => comment._id === newComment._id)
+          );
+          return [...prevComments, ...uniqueComments];
+        });
       }
 
       setHasMore(newComments?.length === COMMENTS_PER_PAGE);
     } catch (error) {
-      if (authenticated)
-        toast.error(
-          error?.response?.data?.message || "Failed to load comments"
-        );
+      toast.error(error?.response?.data?.message || "Failed to load comments");
     } finally {
       setLoading(false);
     }
-  };
-
-  // Handle "Load More Comments"
-  const handleLoadMoreClick = () => {
-    setInfiniteScrollEnabled(true);
-    setPage(page + 1);
-    fetchComments(false);
-  };
-
-  const fetchMoreComments = async () => {
-    setPage(page + 1);
-    fetchComments(false);
   };
 
   // Handle comment submission
@@ -80,22 +88,22 @@ const Comments = ({ episodeId }) => {
     }
   };
 
+  // Handle comment deletion
   const handleDeleteComment = async (commentId) => {
     if (!window.confirm("Are you sure you want to delete this comment?")) {
       return;
     }
 
     try {
-      await axiosInstance.delete(`/api/comments/${commentId}`);
+      await dispatch(deleteComment(commentId)).unwrap();
 
-      // Directly update comments state
       setComments((prevComments) =>
-        prevComments?.filter((comment) => comment?._id !== commentId)
+        prevComments.filter((comment) => comment?._id !== commentId)
       );
 
-      toast.success("Comment deleted");
+      toast.success("Comment deleted!");
     } catch (error) {
-      toast.error("Failed to delete comment");
+      toast.error(error.message || "Failed to delete comment");
     }
   };
 
@@ -127,31 +135,27 @@ const Comments = ({ episodeId }) => {
   };
 
   return (
-    <div className="comments-section mt-8">
+    <div className="comments-section mt-8 p-6">
       {/* Comment Form */}
-      {authenticated && (
-        <div className="comment-form bg-gradient-to-r from-indigo-900 via-purple-900 to-gray-900 p-6 rounded-lg shadow-xl mb-6">
-          <h3 className="text-3xl font-bold mb-6 text-white">
-            Leave a Comment
-          </h3>
-          <form onSubmit={handlePostComment} className="flex flex-col gap-4">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Share your thoughts..."
-              className="w-full bg-gray-800 text-white p-4 rounded-xl resize-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500 text-lg"
-              rows="4"
-            />
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-indigo-500 hover:to-purple-600 text-white py-3 px-6 rounded-xl shadow-md transform transition duration-300 hover:scale-105 text-lg font-semibold"
-              disabled={!newComment?.trim() || loading}
-            >
-              Post Comment
-            </button>
-          </form>
-        </div>
-      )}
+      <div className="comment-form bg-gradient-to-r from-indigo-900 via-purple-900 to-gray-900 p-6 rounded-lg shadow-xl mb-6">
+        <h3 className="text-3xl font-bold mb-6 text-white">Leave a Comment</h3>
+        <form onSubmit={handlePostComment} className="flex flex-col gap-4">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Share your thoughts..."
+            className="w-full bg-gray-800 text-white p-4 rounded-xl resize-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500 text-lg"
+            rows="4"
+          />
+          <button
+            type="submit"
+            className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-indigo-500 hover:to-purple-600 text-white py-3 px-6 rounded-xl shadow-md transform transition duration-300 text-lg font-semibold"
+            disabled={!newComment?.trim() || loading}
+          >
+            Post Comment
+          </button>
+        </form>
+      </div>
 
       {/* Display Comments */}
       <div className="comments-list bg-gray-900 p-6 rounded-lg shadow-xl">
@@ -244,7 +248,7 @@ const Comments = ({ episodeId }) => {
             {!infiniteScrollEnabled && hasMore && (
               <button
                 onClick={handleLoadMoreClick}
-                className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-indigo-500 hover:to-purple-600 text-white py-3 px-6 rounded-xl shadow-md w-full font-semibold text-lg transform transition duration-300 hover:scale-105 mt-6"
+                className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-indigo-500 hover:to-purple-600 text-white py-3 px-6 rounded-xl shadow-md w-full font-semibold text-lg transform transition duration-300 mt-6"
               >
                 Load More Comments
               </button>

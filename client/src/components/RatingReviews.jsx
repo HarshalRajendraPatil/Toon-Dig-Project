@@ -71,8 +71,6 @@ const RatingReviews = ({ animeId, animeName = "" }) => {
     }
   }, [user, reviews]);
 
-  console.log(visibleReviews);
-
   const handleEditReview = (review) => {
     setIsEditing(true);
     setEditingReviewId(review._id);
@@ -269,12 +267,14 @@ const RatingReviews = ({ animeId, animeName = "" }) => {
             ))}
           </ul>
         )}
-        <Link
-          to={`/${title}/all-reviews`}
-          className="text-purple-400 hover:underline mt-6 block"
-        >
-          Show all reviews
-        </Link>
+        {reviews.length > 3 && (
+          <Link
+            to={`/${title}/all-reviews`}
+            className="text-purple-400 hover:underline mt-6 block"
+          >
+            Show all review
+          </Link>
+        )}
       </div>
     </div>
   );

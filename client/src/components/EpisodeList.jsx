@@ -3,6 +3,7 @@ import { setCurrentEpisode } from "../store/slices/episodeSlice.js";
 import { useSelector, useDispatch } from "react-redux";
 
 const EpisodeList = ({ episodes = [] }) => {
+  console.log(episodes);
   const { anime } = useSelector((state) => state.anime);
   const dispatch = useDispatch();
   const title = anime.title.split(" ").join("-");

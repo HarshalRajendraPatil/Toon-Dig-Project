@@ -81,6 +81,21 @@ export const deleteReview = createAsyncThunk(
   }
 );
 
+// Async Thunk to delete a comment
+export const deleteComment = createAsyncThunk(
+  "user/deleteComment",
+  async (commentId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.delete(`/api/comments/${commentId}`);
+      return response.data.data; // Return the success response
+    } catch (error) {
+      return rejectWithValue(
+        error.response.data || "Failed to delete the comment"
+      );
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -145,6 +160,17 @@ const userSlice = createSlice({
         state.user = action.payload;
       })
       .addCase(deleteReview.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteComment.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload; // Update user data after the comment is deleted
+      })
+      .addCase(deleteComment.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });
