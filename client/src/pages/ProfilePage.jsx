@@ -20,10 +20,10 @@ import { useSelector, useDispatch } from "react-redux";
 import Modal from "react-modal";
 import { toast } from "react-toastify";
 import axiosInstance from "../config/axiosConfig";
+import RestrictedFeature from "../RestrictedFeature";
 
 const ProfilePage = () => {
   const { user, token } = useSelector((state) => state?.user);
-  console.log(user);
 
   const dispatch = useDispatch();
 
@@ -141,138 +141,140 @@ const ProfilePage = () => {
     );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Profile Header */}
-      <div className="bg-gradient-to-r from-blue-700 to-purple-900 p-6 sm:p-8 shadow-lg rounded-b-lg">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
-          <div className="flex flex-col sm:flex-row items-center space-y-6 sm:space-y-0 sm:space-x-8">
-            {/* Profile Picture */}
-            <div className="relative w-24 h-24 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-white shadow-md">
-              <img
-                src={user?.profilePicture?.url || "./profile.jpeg"}
-                alt={`${user?.username}'s profile`}
-                className="object-cover w-full h-full"
-              />
+    <RestrictedFeature>
+      <div className="min-h-screen bg-gray-900 text-white">
+        {/* Profile Header */}
+        <div className="bg-gradient-to-r from-blue-700 to-purple-900 p-6 sm:p-8 shadow-lg rounded-b-lg">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+            <div className="flex flex-col sm:flex-row items-center space-y-6 sm:space-y-0 sm:space-x-8">
+              {/* Profile Picture */}
+              <div className="relative w-24 h-24 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-white shadow-md">
+                <img
+                  src={user?.profilePicture?.url || "./profile.jpeg"}
+                  alt={`${user?.username}'s profile`}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+
+              {/* Editable User Info */}
+              <div className="text-center sm:text-left">
+                <h1 className="text-3xl sm:text-5xl font-semibold text-white">
+                  {updatedUser?.username}
+                </h1>
+                <p className="text-gray-300 text-sm sm:text-lg">
+                  {updatedUser?.email}
+                </p>
+                <p className="mt-2 text-sm sm:text-lg text-white">
+                  {updatedUser?.bio || "Anime enthusiast"}
+                </p>
+              </div>
             </div>
 
-            {/* Editable User Info */}
-            <div className="text-center sm:text-left">
-              <h1 className="text-3xl sm:text-5xl font-semibold text-white">
-                {updatedUser?.username}
-              </h1>
-              <p className="text-gray-300 text-sm sm:text-lg">
-                {updatedUser?.email}
-              </p>
-              <p className="mt-2 text-sm sm:text-lg text-white">
-                {updatedUser?.bio || "Anime enthusiast"}
-              </p>
+            {/* Edit Profile Button */}
+            <div className="flex justify-center md:justify-end w-full sm:w-auto mt-4 md:mt-0">
+              <button
+                onClick={toggleEdit}
+                className="px-4 py-2 sm:px-5 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full shadow-md flex items-center space-x-2 sm:space-x-3 transition duration-300"
+              >
+                <FiEdit size={18} />
+                <span>Edit Profile</span>
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Edit Profile Button */}
-          <div className="flex justify-center md:justify-end w-full sm:w-auto mt-4 md:mt-0">
+        {/* Tab Navigation */}
+        <div className="bg-gray-800 mt-6 px-6">
+          <div className="max-w-7xl mx-auto flex space-x-6 overflow-x-auto border-b border-gray-700">
+            {[
+              { id: "overview", label: "Overview", icon: <FiUser /> },
+              { id: "watchlist", label: "Watchlist", icon: <FiBookmark /> },
+              { id: "history", label: "Watch History", icon: <FiFilm /> },
+              { id: "favorites", label: "Favorites", icon: <FiHeart /> },
+              { id: "followers", label: "Followers", icon: <FiUsers /> },
+              { id: "followings", label: "Followings", icon: <FiUsers /> },
+              { id: "settings", label: "Settings", icon: <FiSettings /> },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 px-4 text-lg font-semibold flex items-center space-x-2 ${
+                  activeTab === tab.id
+                    ? "text-blue-400 border-blue-400"
+                    : "text-gray-400"
+                } border-b-2 hover:text-blue-300 transition duration-300`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="max-w-7xl mx-auto py-10 px-4">{renderTabContent()}</div>
+
+        {/* Edit Profile Modal */}
+        <Modal
+          isOpen={isEditing}
+          onRequestClose={toggleEdit}
+          contentLabel="Edit Profile Modal"
+          className="bg-gray-800 p-6 sm:p-8 md:p-10 rounded-lg shadow-2xl w-full max-w-lg md:max-w-2xl lg:max-w-[50vw] mx-auto mt-16 sm:mt-20 max-h-[90vh] overflow-y-auto"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center"
+        >
+          <h2 className="text-2xl sm:text-3xl font-semibold text-white mb-4 sm:mb-6">
+            Edit Profile
+          </h2>
+          <div className="space-y-4 sm:space-y-6">
+            <input
+              type="text"
+              name="username"
+              value={updatedUser?.username}
+              onChange={handleInputChange}
+              className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
+              placeholder="Username"
+            />
+            <input
+              type="email"
+              name="email"
+              value={updatedUser?.email}
+              onChange={handleInputChange}
+              className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
+              placeholder="Email"
+            />
+            <textarea
+              name="bio"
+              value={updatedUser?.bio}
+              onChange={handleInputChange}
+              className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
+              placeholder="Bio"
+            />
+
+            {/* Profile picture input */}
+            <input
+              type="file"
+              onChange={handleProfilePictureChange}
+              className="w-full text-white bg-gray-700 rounded-lg"
+            />
+          </div>
+
+          <div className="mt-6 sm:mt-8 flex justify-end space-x-3">
             <button
               onClick={toggleEdit}
-              className="px-4 py-2 sm:px-5 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full shadow-md flex items-center space-x-2 sm:space-x-3 transition duration-300"
+              className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white transition duration-300"
             >
-              <FiEdit size={18} />
-              <span>Edit Profile</span>
+              Cancel
+            </button>
+            <button
+              onClick={saveProfile}
+              className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition duration-300"
+            >
+              Save Changes
             </button>
           </div>
-        </div>
+        </Modal>
       </div>
-
-      {/* Tab Navigation */}
-      <div className="bg-gray-800 mt-6 px-6">
-        <div className="max-w-7xl mx-auto flex space-x-6 overflow-x-auto border-b border-gray-700">
-          {[
-            { id: "overview", label: "Overview", icon: <FiUser /> },
-            { id: "watchlist", label: "Watchlist", icon: <FiBookmark /> },
-            { id: "history", label: "Watch History", icon: <FiFilm /> },
-            { id: "favorites", label: "Favorites", icon: <FiHeart /> },
-            { id: "followers", label: "Followers", icon: <FiUsers /> },
-            { id: "followings", label: "Followings", icon: <FiUsers /> },
-            { id: "settings", label: "Settings", icon: <FiSettings /> },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`py-4 px-4 text-lg font-semibold flex items-center space-x-2 ${
-                activeTab === tab.id
-                  ? "text-blue-400 border-blue-400"
-                  : "text-gray-400"
-              } border-b-2 hover:text-blue-300 transition duration-300`}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab Content */}
-      <div className="max-w-7xl mx-auto py-10 px-4">{renderTabContent()}</div>
-
-      {/* Edit Profile Modal */}
-      <Modal
-        isOpen={isEditing}
-        onRequestClose={toggleEdit}
-        contentLabel="Edit Profile Modal"
-        className="bg-gray-800 p-6 sm:p-8 md:p-10 rounded-lg shadow-2xl w-full max-w-lg md:max-w-2xl lg:max-w-[50vw] mx-auto mt-16 sm:mt-20 max-h-[90vh] overflow-y-auto"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center"
-      >
-        <h2 className="text-2xl sm:text-3xl font-semibold text-white mb-4 sm:mb-6">
-          Edit Profile
-        </h2>
-        <div className="space-y-4 sm:space-y-6">
-          <input
-            type="text"
-            name="username"
-            value={updatedUser?.username}
-            onChange={handleInputChange}
-            className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
-            placeholder="Username"
-          />
-          <input
-            type="email"
-            name="email"
-            value={updatedUser?.email}
-            onChange={handleInputChange}
-            className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
-            placeholder="Email"
-          />
-          <textarea
-            name="bio"
-            value={updatedUser?.bio}
-            onChange={handleInputChange}
-            className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
-            placeholder="Bio"
-          />
-
-          {/* Profile picture input */}
-          <input
-            type="file"
-            onChange={handleProfilePictureChange}
-            className="w-full text-white bg-gray-700 rounded-lg"
-          />
-        </div>
-
-        <div className="mt-6 sm:mt-8 flex justify-end space-x-3">
-          <button
-            onClick={toggleEdit}
-            className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white transition duration-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={saveProfile}
-            className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition duration-300"
-          >
-            Save Changes
-          </button>
-        </div>
-      </Modal>
-    </div>
+    </RestrictedFeature>
   );
 };
 

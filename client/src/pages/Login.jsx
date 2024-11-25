@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import axiosInstance from "../config/axiosConfig";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser, setLoading, setError } from "../store/slices/userSlice"; // Import actions from the userSlice
+import { setUser, setLoading, setError } from "../store/slices/userSlice";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -11,9 +11,10 @@ const Login = () => {
     password: "",
   });
 
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isLoading = useSelector((state) => state.user.isLoading); // Get the loading state from Redux
+  const isLoading = useSelector((state) => state.user.isLoading);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,7 +37,7 @@ const Login = () => {
         setUser({ user: response.data.data, token: response.data.token })
       ); // Set the user data in Redux store
       toast.success("Login Successful.");
-      navigate("/");
+      navigate(-1);
     } catch (error) {
       console.error("Login error:", error.message);
       dispatch(setError(error?.response?.data?.message || "Login failed."));

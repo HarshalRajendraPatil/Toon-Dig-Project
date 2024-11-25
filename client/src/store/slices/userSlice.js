@@ -96,6 +96,15 @@ export const deleteComment = createAsyncThunk(
   }
 );
 
+export const checkAuthStatus = createAsyncThunk(
+  "user/checkAuthStatus",
+  async (_, { dispatch }) => {
+    if (!isCookieValid()) {
+      dispatch(clearUser());
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -179,3 +188,13 @@ const userSlice = createSlice({
 
 export const { setUser, clearUser, setLoading, setError } = userSlice.actions;
 export default userSlice.reducer;
+
+const isCookieValid = () => {
+  const cookies = document.cookie.split(";").reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split("=");
+    acc[key] = value;
+    return acc;
+  }, {});
+
+  return Boolean(cookies["jwt"]); // Replace 'authToken' with your cookie name
+};

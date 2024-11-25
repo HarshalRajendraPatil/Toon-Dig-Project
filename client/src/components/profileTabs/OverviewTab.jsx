@@ -3,6 +3,7 @@ import { FiLock, FiCalendar } from "react-icons/fi";
 import { FaChartPie } from "react-icons/fa";
 import { Line } from "react-chartjs-2"; // For stats chart (Install chart.js)
 import Chart from "chart.js/auto";
+import Achievements from "../Achievements";
 
 const OverviewTab = ({
   user,
@@ -38,24 +39,6 @@ const OverviewTab = ({
       },
     ],
   };
-
-  const renderBadges = () => (
-    <div className="mt-10 space-y-4">
-      <h3 className="text-2xl font-semibold">Achievements</h3>
-      <div className="flex space-x-4">
-        {user?.stats?.animeWatched >= 50 && (
-          <div className="bg-purple-600 text-white px-4 py-2 rounded-lg shadow-md">
-            Anime Fanatic (50+ Anime Watched)
-          </div>
-        )}
-        {user?.stats?.favoritesCount >= 10 && (
-          <div className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md">
-            Super Fan (10+ Favorites)
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   const renderActivityTimeline = () => (
     <div className="mt-10 space-y-4">
@@ -140,7 +123,7 @@ const OverviewTab = ({
       </div>
 
       {/* Badges for Milestones */}
-      {renderBadges()}
+      {<Achievements />}
 
       {/* User Activity Timeline */}
       {renderActivityTimeline()}
