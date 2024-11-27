@@ -192,6 +192,7 @@ export default userSlice.reducer;
 
 const isCookieValid = () => {
   // Check if the 'jwt' cookie exists
+  console.log(Cookies.get("jwt"));
   return Boolean(Cookies.get("jwt"));
 };
 // const isCookieValid = () => {
