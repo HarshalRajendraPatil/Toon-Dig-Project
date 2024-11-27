@@ -1,6 +1,7 @@
 // userSlice.js
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosInstance from "../../config/axiosConfig";
+import Cookies from "js-cookie";
 
 const initialState = {
   user: null, // Stores user information
@@ -190,11 +191,15 @@ export const { setUser, clearUser, setLoading, setError } = userSlice.actions;
 export default userSlice.reducer;
 
 const isCookieValid = () => {
-  const cookies = document.cookie.split(";").reduce((acc, cookie) => {
-    const [key, value] = cookie.trim().split("=");
-    acc[key] = value;
-    return acc;
-  }, {});
-
-  return Boolean(cookies["jwt"]); // Replace 'authToken' with your cookie name
+  // Check if the 'jwt' cookie exists
+  return Boolean(Cookies.get("jwt"));
 };
+// const isCookieValid = () => {
+//   const cookies = document.cookie.split(";").reduce((acc, cookie) => {
+//     const [key, value] = cookie.trim().split("=");
+//     acc[key] = value;
+//     return acc;
+//   }, {});
+
+//   return Boolean(cookies["jwt"]); // Replace 'authToken' with your cookie name
+// };
