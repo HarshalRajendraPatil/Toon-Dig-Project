@@ -10,7 +10,6 @@ const getTokenAndResponse = (res, user) => {
   res
     .cookie("jwt", token, {
       maxAge: process.env.COOKIE_EXPIRES,
-      domain: ".toondig.netlify.app",
       secure: true,
       httpOnly: false,
       sameSite: "none",
