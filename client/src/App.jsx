@@ -27,16 +27,6 @@ import CreateOrEditBlog from "./forms/CreateOrEditBlogForm";
 import PageNotFound from "./pages/PageNotFound";
 
 function App() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      dispatch(checkAuthStatus());
-    }, 15000);
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [dispatch]);
-
   return (
     <BrowserRouter>
       <ToastContainer />
