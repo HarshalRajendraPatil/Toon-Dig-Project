@@ -25,6 +25,7 @@ import BlogPage from "./pages/BlogsPage";
 import BlogDetailPage from "./pages/BlogDetailPage";
 import CreateOrEditBlog from "./forms/CreateOrEditBlogForm";
 import PageNotFound from "./pages/PageNotFound";
+import CommunityPage from "./pages/CommunityPage.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -70,13 +71,14 @@ function App() {
           />
           <Route path="/blogs" element={<BlogPage />} />
           <Route path="/blogs/:id" element={<BlogDetailPage />} />
+          <Route path="/create-blog" element={<CreateOrEditBlog />} />
+          <Route path="/community" element={<CommunityPage />} />
           <Route path="*" element={<PageNotFound />} />
         </Route>
         <Route path="/register" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/create-blog" element={<CreateOrEditBlog />} />
       </Routes>
     </BrowserRouter>
   );

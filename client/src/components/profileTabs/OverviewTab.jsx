@@ -4,6 +4,7 @@ import { FaChartPie } from "react-icons/fa";
 import { Line } from "react-chartjs-2"; // For stats chart (Install chart.js)
 import Chart from "chart.js/auto";
 import Achievements from "../Achievements";
+import { useLocation } from "react-router-dom";
 
 const OverviewTab = ({
   user,
@@ -39,6 +40,10 @@ const OverviewTab = ({
       },
     ],
   };
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const queryUserId = queryParams.get("id");
 
   const renderActivityTimeline = () => (
     <div className="mt-10 space-y-4">
@@ -129,41 +134,43 @@ const OverviewTab = ({
       {renderActivityTimeline()}
 
       {/* Change Password Section */}
-      <div className="mt-10 bg-gray-800 p-8 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-semibold mb-6 flex items-center space-x-2">
-          <FiLock /> <span>Change Password</span>
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="text-gray-400">Current Password</label>
-            <input
-              type="password"
-              name="currentPassword"
-              value={passwords?.currentPassword}
-              onChange={handlePasswordChange}
-              className="w-full p-3 bg-gray-700 text-white rounded-lg mt-2"
-              placeholder="Enter current password"
-            />
+      {!queryUserId && (
+        <div className="mt-10 bg-gray-800 p-8 rounded-lg shadow-lg">
+          <h3 className="text-2xl font-semibold mb-6 flex items-center space-x-2">
+            <FiLock /> <span>Change Password</span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-gray-400">Current Password</label>
+              <input
+                type="password"
+                name="currentPassword"
+                value={passwords?.currentPassword}
+                onChange={handlePasswordChange}
+                className="w-full p-3 bg-gray-700 text-white rounded-lg mt-2"
+                placeholder="Enter current password"
+              />
+            </div>
+            <div>
+              <label className="text-gray-400">New Password</label>
+              <input
+                type="password"
+                name="newPassword"
+                value={passwords?.newPassword}
+                onChange={handlePasswordChange}
+                className="w-full p-3 bg-gray-700 text-white rounded-lg mt-2"
+                placeholder="Enter new password"
+              />
+            </div>
           </div>
-          <div>
-            <label className="text-gray-400">New Password</label>
-            <input
-              type="password"
-              name="newPassword"
-              value={passwords?.newPassword}
-              onChange={handlePasswordChange}
-              className="w-full p-3 bg-gray-700 text-white rounded-lg mt-2"
-              placeholder="Enter new password"
-            />
-          </div>
+          <button
+            onClick={changePassword}
+            className="mt-6 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-md transition duration-300"
+          >
+            Change Password
+          </button>
         </div>
-        <button
-          onClick={changePassword}
-          className="mt-6 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-md transition duration-300"
-        >
-          Change Password
-        </button>
-      </div>
+      )}
     </div>
   );
 };

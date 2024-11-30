@@ -37,6 +37,7 @@ const Login = () => {
         setUser({ user: response.data.data, token: response.data.token })
       ); // Set the user data in Redux store
       toast.success("Login Successful.");
+      localStorage.setItem("token", response.data.token);
       navigate(-1);
     } catch (error) {
       console.error("Login error:", error.message);

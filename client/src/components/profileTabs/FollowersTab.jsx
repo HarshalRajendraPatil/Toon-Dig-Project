@@ -1,38 +1,69 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaUsers } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { Link, useLocation } from "react-router-dom";
+import axiosInstance from "../../config/axiosConfig";
+import LoadingSpinner from "../LoadingSpinner";
+import UserProfiles from "../UserProfiles";
 
-const FollowersTab = ({ followers }) => {
+const FollowersTab = () => {
+  const loggedInUser = useSelector((state) => state.user.user);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const queryUserId = queryParams.get("id");
+
+  const userIdToFetch = queryUserId || loggedInUser._id; // Use query parameter or fallback to logged-in user
+
+  const [followers, setFollowers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchFollowers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await axiosInstance.get(
+          `/api/users/${userIdToFetch}/followers`
+        );
+        setFollowers(response.data.data);
+      } catch (err) {
+        setError(
+          err.response?.data?.message || "Failed to fetch followers list."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFollowers();
+  }, [userIdToFetch]); // Re-fetch if userIdToFetch changes
+
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-10">
       <h3 className="text-lg text-gray-400 mb-4 flex items-center space-x-2">
         <FaUsers /> <span>Followers</span>
       </h3>
 
-      {followers.length === 0 ? (
-        <p className="text-gray-500">You have no followers yet.</p>
+      {loading ? (
+        <LoadingSpinner />
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : followers.length === 0 ? (
+        <p className="text-gray-500">
+          {queryUserId
+            ? "This user has no followers yet."
+            : "You have no followers yet."}
+        </p>
       ) : (
-        <ul className="space-y-4">
-          {followers.map((follower, index) => (
-            <li
-              key={index}
-              className="bg-gray-700 p-4 rounded-lg shadow-md flex items-center space-x-4"
-            >
-              <img
-                src={follower.avatar}
-                alt={follower.username}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-              <div>
-                <h4 className="text-lg font-semibold text-white">
-                  {follower.username}
-                </h4>
-                <p className="text-gray-400">{follower.email}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <UserProfiles
+          users={followers}
+          followedUserIds={loggedInUser.following}
+        />
       )}
     </div>
   );
 };
+
 export default FollowersTab;

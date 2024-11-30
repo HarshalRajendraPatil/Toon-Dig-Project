@@ -2,7 +2,7 @@ import express from "express";
 import isLoggedIn from "../Middlewares/isLoggedInMiddleware.js";
 import {
   deleteUser,
-  getAllUsers,
+  searchUsers,
   getUser,
   updateUser,
   addToWatchlist,
@@ -10,13 +10,16 @@ import {
   getFavorites,
   getWatchlist,
   changePassword,
+  followUser,
+  getFollowersList,
+  getFollowingsList,
 } from "../Controllers/userController.js";
 
 const router = express.Router();
 
 router.use(isLoggedIn);
 
-router.get("/", getAllUsers);
+router.get("/", searchUsers);
 
 router.post("/favorites", addToFovorites);
 
@@ -25,6 +28,12 @@ router.get("/favorites", getFavorites);
 router.post("/watchlist", addToWatchlist);
 
 router.get("/watchlist", getWatchlist);
+
+router.post("/:otherUserId/follow", followUser);
+
+router.get("/:userId/followers", getFollowersList);
+
+router.get("/:userId/followings", getFollowingsList);
 
 router.get("/:userId", getUser);
 

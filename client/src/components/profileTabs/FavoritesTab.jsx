@@ -2,12 +2,12 @@ import React from "react";
 import ListSection from "./ListSection";
 import { FaHeart } from "react-icons/fa";
 
-const FavoritesTab = ({ user }) => {
+const FavoritesTab = () => {
   return (
     <ListSection
       title="Favorites"
       icon={<FaHeart />}
-      emptyMessage="You haven't added any favorites yet."
+      emptyMessage="No favorites added yet."
     />
   );
 };

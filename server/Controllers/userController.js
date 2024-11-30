@@ -2,15 +2,10 @@ import catchAsync from "../Utils/catchAsync.js";
 import User from "../models/UserModel.js";
 import CustomError from "../Utils/CustomError.js";
 import Anime from "../models/AnimeModel.js";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import cloudinary from "../services/cloudinary.js";
 import bcrypt from "bcrypt";
-
-export const getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-
-  res.status(200).json({ status: "success", data: users });
-});
+import { ObjectId } from "mongodb";
 
 export const updateUser = catchAsync(async (req, res, next) => {
   const userId = req?.user?.id;
@@ -107,13 +102,21 @@ export const addToWatchlist = catchAsync(async (req, res, next) => {
 });
 
 export const getFavorites = catchAsync(async (req, res, next) => {
-  const favorites = await User.findById(req.user.id).populate("favorites");
+  let id = req.query.id;
+
+  const favorites = await User.findById(id ? id : req.user.id).populate(
+    "favorites"
+  );
 
   res.status(200).json({ status: "success", data: favorites.favorites });
 });
 
 export const getWatchlist = catchAsync(async (req, res, next) => {
-  const watchList = await User.findById(req.user.id).populate("watchlist");
+  let id = req.query.id;
+
+  const watchList = await User.findById(id ? id : req.user.id).populate(
+    "watchlist"
+  );
 
   res.status(200).json({ status: "success", data: watchList.watchlist });
 });
@@ -137,5 +140,142 @@ export const changePassword = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: newUser,
+  });
+});
+
+export const followUser = catchAsync(async (req, res, next) => {
+  const { otherUserId } = req.params;
+  const loggedInUserId = req.user._id;
+
+  const otherUser = await User.findById(otherUserId);
+  if (!otherUser)
+    return next(new CustomError("This user does not exists", 404));
+
+  if (otherUser.followers.includes(new ObjectId(loggedInUserId))) {
+    otherUser.followers = otherUser.followers.filter(
+      (id) => id.toString() != loggedInUserId.toString()
+    );
+
+    req.user.following = req.user.following.filter(
+      (id) => id.toString() != otherUserId.toString()
+    );
+  } else {
+    req.user.following.push(otherUserId);
+    otherUser.followers.push(loggedInUserId);
+  }
+
+  const user = await req.user.save();
+  await otherUser.save();
+
+  res.status(200).json({
+    status: "success",
+    data: user,
+  });
+});
+
+export const getFollowersList = catchAsync(async (req, res, next) => {
+  const { userId } = req.params;
+  const user = await User.findById(userId).populate("followers");
+
+  if (!user) return next(new CustomError("User not found", 404));
+
+  res.status(200).json({
+    status: "success",
+    data: user.followers,
+  });
+});
+
+export const getFollowingsList = catchAsync(async (req, res, next) => {
+  const { userId } = req.params;
+  const user = await User.findById(userId).populate("following");
+
+  if (!user) return next(new CustomError("User not found", 404));
+
+  res.status(200).json({
+    status: "success",
+    data: user.following,
+  });
+});
+
+export const searchUsers = catchAsync(async (req, res) => {
+  const {
+    username,
+    email,
+    role,
+    isAdmin,
+    bio,
+    followersCountMin,
+    followersCountMax,
+    sortBy = "createdAt", // Default sorting field
+    sortOrder = "desc", // Default sort order
+    page = 1,
+    limit = 10,
+  } = req.query;
+
+  // Pagination
+  const pageNumber = parseInt(page, 10);
+  const pageSize = parseInt(limit, 10);
+
+  // Base query
+  const query = {};
+
+  // Text search for username
+  if (username) {
+    query.username = { $regex: username, $options: "i" }; // Case-insensitive regex
+  }
+
+  // Exact match for email
+  if (email) {
+    query.email = email;
+  }
+
+  // Filtering by role
+  if (role) {
+    query.role = role;
+  }
+
+  // Admin filter
+  if (isAdmin !== undefined) {
+    query.isAdmin = isAdmin === "true";
+  }
+
+  // Bio search
+  if (bio) {
+    query.bio = { $regex: bio, $options: "i" }; // Case-insensitive regex
+  }
+
+  // Filter by followers count range
+  if (followersCountMin || followersCountMax) {
+    query["followers"] = {
+      ...(followersCountMin ? { $gte: parseInt(followersCountMin, 10) } : {}),
+      ...(followersCountMax ? { $lte: parseInt(followersCountMax, 10) } : {}),
+    };
+  }
+
+  // Sort options
+  const sortOptions = {};
+  sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+  // Execute the query with pagination
+  const users = await User.find(query)
+    .select("-password") // Exclude sensitive fields
+    .populate("followers", "username") // Populate follower details
+    .populate("following", "username") // Populate following details
+    .sort(sortOptions)
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize);
+
+  // Total count for pagination
+  const totalUsers = await User.countDocuments(query);
+
+  res.status(200).json({
+    success: true,
+    data: users,
+    pagination: {
+      total: totalUsers,
+      page: pageNumber,
+      limit: pageSize,
+      totalPages: Math.ceil(totalUsers / pageSize),
+    },
   });
 });

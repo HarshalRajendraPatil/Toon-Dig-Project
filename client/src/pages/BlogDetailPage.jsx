@@ -30,6 +30,7 @@ const BlogDetailPage = () => {
         setLikeCount(response.data.data.likes.length);
         setDislikeCount(response.data.data.disLikes.length);
       } catch (error) {
+        toast.error(error?.response?.data?.message);
         console.error("Error fetching blog details", error);
       } finally {
         setIsLoading(false);

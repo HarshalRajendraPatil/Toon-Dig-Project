@@ -6,6 +6,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import BlogCard from "../components/BlogCard";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const BlogPage = () => {
   const [blogs, setBlogs] = useState([]);
@@ -52,6 +53,7 @@ const BlogPage = () => {
 
       if (!isNewSearch) setPage((prevPage) => prevPage + 1);
     } catch (error) {
+      toast.error(error?.response?.data?.message);
       console.error("Error fetching blogs", error);
     } finally {
       setIsLoading(false);

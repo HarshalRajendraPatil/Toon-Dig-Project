@@ -105,6 +105,20 @@ export const checkAuthStatus = createAsyncThunk(
   }
 );
 
+export const followUser = createAsyncThunk(
+  "user/followUser",
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post(`/api/users/${userId}/follow`);
+      return response.data.data; // Assume the backend sends the updated user data
+    } catch (error) {
+      return rejectWithValue(
+        error.response.data || "Failed to follow the user"
+      );
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -182,6 +196,17 @@ const userSlice = createSlice({
       .addCase(deleteComment.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+      .addCase(followUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(followUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload; // Update user data with the response
+      })
+      .addCase(followUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
       });
   },
 });
@@ -190,11 +215,7 @@ export const { setUser, clearUser, setLoading, setError } = userSlice.actions;
 export default userSlice.reducer;
 
 const isCookieValid = () => {
-  const cookies = document.cookie.split(";").reduce((acc, cookie) => {
-    const [key, value] = cookie.trim().split("=");
-    acc[key] = value;
-    return acc;
-  }, {});
+  const token = localStorage.getItem("token");
 
-  return Boolean(cookies["jwt"]); // Replace 'authToken' with your cookie name
+  return Boolean(token); // Replace 'authToken' with your cookie name
 };

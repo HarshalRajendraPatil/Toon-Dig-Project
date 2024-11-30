@@ -48,6 +48,7 @@ const Signup = () => {
 
       // Assuming response.data contains the registered user details
       dispatch(setUser(response.data.data)); // Update global state with the registered user
+      localStorage.setItem("token", response.data.token);
 
       toast.success("Registration Successful.");
       navigate("/");

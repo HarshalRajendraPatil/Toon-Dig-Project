@@ -2,12 +2,12 @@ import React from "react";
 import { FaListAlt } from "react-icons/fa";
 import ListSection from "./ListSection";
 
-const WatchlistTab = ({ user }) => {
+const WatchlistTab = () => {
   return (
     <ListSection
       title="Watchlist"
       icon={<FaListAlt />}
-      emptyMessage="Your watchlist is currently empty."
+      emptyMessage="The watchlist is currently empty."
     />
   );
 };

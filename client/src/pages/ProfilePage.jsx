@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import WatchlistTab from "../components/profileTabs/WatchlistTab";
 import OverviewTab from "../components/profileTabs/OverviewTab";
 import WatchHistoryTab from "../components/profileTabs/WatchHistoryTab";
@@ -7,6 +8,7 @@ import FollowingsTab from "../components/profileTabs/FollowingsTab";
 import FollowersTab from "../components/profileTabs/FollowersTab";
 import SettingsTab from "../components/profileTabs/SettingsTab";
 import { setUser } from "../store/slices/userSlice";
+import { followUser } from "../store/slices/userSlice"; // Import followUser action
 import {
   FiEdit,
   FiUser,
@@ -24,17 +26,43 @@ import RestrictedFeature from "../RestrictedFeature";
 
 const ProfilePage = () => {
   const { user, token } = useSelector((state) => state?.user);
-
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditing, setIsEditing] = useState(false);
-  const [updatedUser, setUpdatedUser] = useState({ ...user }); // Clone user object
-  const [profilePicture, setProfilePicture] = useState(null); // For handling new profile picture
+  const [updatedUser, setUpdatedUser] = useState(user);
+  const [profilePicture, setProfilePicture] = useState(null);
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
   });
+  const [isFollowing, setIsFollowing] = useState(false); // State for follow status
+
+  const queryParams = new URLSearchParams(location.search);
+  const userId = queryParams.get("id");
+
+  const fetchUserDetails = async (id) => {
+    try {
+      const response = await axiosInstance.get(`/api/users/${id}`);
+      setUpdatedUser(response.data.data);
+
+      // Check follow status
+      const alreadyFollowing = response.data.data.followers.includes(user._id);
+      setIsFollowing(alreadyFollowing);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      toast.error("Failed to fetch user details.");
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserDetails(userId);
+    } else {
+      setUpdatedUser(user); // Use the logged-in user's details
+    }
+  }, [userId, user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -63,17 +91,14 @@ const ProfilePage = () => {
       formData.append("bio", updatedUser?.bio || "");
 
       if (profilePicture) {
-        formData.append("profilePicture", profilePicture); // Add profile picture if available
+        formData.append("profilePicture", profilePicture);
       }
 
-      // Send PUT request to update profile
       const response = await axiosInstance.put(`/api/users`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       const updatedUserData = response.data.data;
-
-      // Update local state and Redux store with updated user data
       setUpdatedUser(updatedUserData);
       dispatch(setUser({ user: updatedUserData, token }));
 
@@ -88,7 +113,7 @@ const ProfilePage = () => {
   const changePassword = async () => {
     try {
       const { currentPassword, newPassword } = passwords;
-      const response = await axiosInstance.put(`/api/users/change-password`, {
+      await axiosInstance.put(`/api/users/change-password`, {
         currentPassword,
         password: newPassword,
       });
@@ -97,11 +122,23 @@ const ProfilePage = () => {
       setPasswords({ currentPassword: "", newPassword: "" });
     } catch (error) {
       console.error("Error changing password:", error);
-      console.log(error.response.data);
-      toast.error(
-        error?.response?.data?.message ||
-          "Failed to change password. Please try again."
-      );
+      toast.error("Failed to change password. Please try again.");
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    try {
+      const resultAction = await dispatch(followUser(userId));
+      if (followUser.fulfilled.match(resultAction)) {
+        toast.success(
+          isFollowing ? "Unfollowed successfully!" : "Followed successfully!"
+        );
+        setIsFollowing(!isFollowing);
+      } else {
+        throw new Error(resultAction.payload || "Follow/Unfollow failed");
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to update follow status.");
     }
   };
 
@@ -117,23 +154,23 @@ const ProfilePage = () => {
           />
         );
       case "watchlist":
-        return <WatchlistTab user={user} />;
+        return <WatchlistTab />;
       case "history":
-        return <WatchHistoryTab history={user.watchHistory} />;
+        return <WatchHistoryTab history={updatedUser.watchHistory} />;
       case "favorites":
-        return <FavoritesTab user={user} />;
+        return <FavoritesTab />;
       case "followers":
-        return <FollowersTab followers={user.followers} />;
+        return <FollowersTab />;
       case "followings":
-        return <FollowingsTab following={user.following} />;
+        return <FollowingsTab />;
       case "settings":
-        return <SettingsTab settings={user.settings} />;
+        return <SettingsTab settings={updatedUser.settings} />;
       default:
         return <OverviewTab user={updatedUser} />;
     }
   };
 
-  if (!user)
+  if (!updatedUser)
     return (
       <h1 className="text-2xl text-center text-white min-w-full my-20">
         Please login to view this page ☹️
@@ -147,16 +184,14 @@ const ProfilePage = () => {
         <div className="bg-gradient-to-r from-blue-700 to-purple-900 p-6 sm:p-8 shadow-lg rounded-b-lg">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
             <div className="flex flex-col sm:flex-row items-center space-y-6 sm:space-y-0 sm:space-x-8">
-              {/* Profile Picture */}
               <div className="relative w-24 h-24 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-white shadow-md">
                 <img
-                  src={user?.profilePicture?.url || "./profile.jpeg"}
-                  alt={`${user?.username}'s profile`}
+                  src={updatedUser?.profilePicture?.url || "./profile.jpeg"}
+                  alt={`${updatedUser?.username}'s profile`}
                   className="object-cover w-full h-full"
                 />
               </div>
 
-              {/* Editable User Info */}
               <div className="text-center sm:text-left">
                 <h1 className="text-3xl sm:text-5xl font-semibold text-white">
                   {updatedUser?.username}
@@ -170,16 +205,32 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Edit Profile Button */}
-            <div className="flex justify-center md:justify-end w-full sm:w-auto mt-4 md:mt-0">
-              <button
-                onClick={toggleEdit}
-                className="px-4 py-2 sm:px-5 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full shadow-md flex items-center space-x-2 sm:space-x-3 transition duration-300"
-              >
-                <FiEdit size={18} />
-                <span>Edit Profile</span>
-              </button>
-            </div>
+            {!userId && (
+              <div className="flex justify-center md:justify-end w-full sm:w-auto mt-4 md:mt-0">
+                <button
+                  onClick={toggleEdit}
+                  className="px-4 py-2 sm:px-5 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full shadow-md flex items-center space-x-2 sm:space-x-3 transition duration-300"
+                >
+                  <FiEdit size={18} />
+                  <span>Edit Profile</span>
+                </button>
+              </div>
+            )}
+
+            {userId && userId !== user._id && (
+              <div className="flex justify-center md:justify-end w-full sm:w-auto mt-4 md:mt-0">
+                <button
+                  onClick={handleFollowToggle}
+                  className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full shadow-md transition duration-300 ${
+                    isFollowing
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "bg-green-500 hover:bg-green-600 text-white"
+                  }`}
+                >
+                  {isFollowing ? "Unfollow" : "Follow"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -189,87 +240,110 @@ const ProfilePage = () => {
             {[
               { id: "overview", label: "Overview", icon: <FiUser /> },
               { id: "watchlist", label: "Watchlist", icon: <FiBookmark /> },
-              { id: "history", label: "Watch History", icon: <FiFilm /> },
+              { id: "history", label: "History", icon: <FiFilm /> },
               { id: "favorites", label: "Favorites", icon: <FiHeart /> },
               { id: "followers", label: "Followers", icon: <FiUsers /> },
               { id: "followings", label: "Followings", icon: <FiUsers /> },
               { id: "settings", label: "Settings", icon: <FiSettings /> },
-            ].map((tab) => (
+            ].map(({ id, label, icon }) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-4 text-lg font-semibold flex items-center space-x-2 ${
-                  activeTab === tab.id
-                    ? "text-blue-400 border-blue-400"
-                    : "text-gray-400"
-                } border-b-2 hover:text-blue-300 transition duration-300`}
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-t-lg flex items-center space-x-2 text-sm sm:text-base font-medium ${
+                  activeTab === id
+                    ? "text-indigo-500 bg-gray-900"
+                    : "text-gray-400 hover:text-indigo-400"
+                }`}
               >
-                {tab.icon}
-                <span>{tab.label}</span>
+                {icon}
+                <span>{label}</span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Tab Content */}
-        <div className="max-w-7xl mx-auto py-10 px-4">{renderTabContent()}</div>
+        <div className="py-8 px-6">{renderTabContent()}</div>
 
-        {/* Edit Profile Modal */}
+        {/* Profile Edit Modal */}
         <Modal
           isOpen={isEditing}
-          onRequestClose={toggleEdit}
-          contentLabel="Edit Profile Modal"
-          className="bg-gray-800 p-6 sm:p-8 md:p-10 rounded-lg shadow-2xl w-full max-w-lg md:max-w-2xl lg:max-w-[50vw] mx-auto mt-16 sm:mt-20 max-h-[90vh] overflow-y-auto"
-          overlayClassName="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center"
+          onRequestClose={() => setIsEditing(false)}
+          className="bg-gray-900 text-white rounded-lg shadow-md max-w-lg w-full p-6 mx-auto outline-none relative"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center"
+          ariaHideApp={false}
         >
-          <h2 className="text-2xl sm:text-3xl font-semibold text-white mb-4 sm:mb-6">
-            Edit Profile
-          </h2>
-          <div className="space-y-4 sm:space-y-6">
-            <input
-              type="text"
-              name="username"
-              value={updatedUser?.username}
-              onChange={handleInputChange}
-              className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
-              placeholder="Username"
-            />
-            <input
-              type="email"
-              name="email"
-              value={updatedUser?.email}
-              onChange={handleInputChange}
-              className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
-              placeholder="Email"
-            />
-            <textarea
-              name="bio"
-              value={updatedUser?.bio}
-              onChange={handleInputChange}
-              className="w-full p-2 sm:p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300"
-              placeholder="Bio"
-            />
-
-            {/* Profile picture input */}
-            <input
-              type="file"
-              onChange={handleProfilePictureChange}
-              className="w-full text-white bg-gray-700 rounded-lg"
-            />
+          <button
+            onClick={() => setIsEditing(false)}
+            className="absolute top-3 right-3 text-red-400 hover:text-red-600 text-xl"
+          >
+            &times;
+          </button>
+          <h2 className="text-2xl font-semibold mb-6">Edit Profile</h2>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="profilePicture" className="text-sm font-medium">
+                Profile Picture
+              </label>
+              <input
+                type="file"
+                id="profilePicture"
+                className="block w-full mt-2 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-500 file:text-white hover:file:bg-indigo-600"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="username" className="text-sm font-medium">
+                Username
+              </label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                className="block w-full mt-2 p-2 rounded-md bg-gray-800 border-gray-700 text-white text-sm"
+                value={updatedUser?.username}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="text-sm font-medium">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                className="block w-full mt-2 p-2 rounded-md bg-gray-800 border-gray-700 text-white text-sm"
+                value={updatedUser?.email}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="bio" className="text-sm font-medium">
+                Bio
+              </label>
+              <textarea
+                id="bio"
+                name="bio"
+                className="block w-full mt-2 p-2 rounded-md bg-gray-800 border-gray-700 text-white text-sm"
+                value={updatedUser?.bio}
+                onChange={handleInputChange}
+              />
+            </div>
           </div>
-
-          <div className="mt-6 sm:mt-8 flex justify-end space-x-3">
+          <div className="flex justify-end space-x-4 mt-6">
             <button
-              onClick={toggleEdit}
-              className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white transition duration-300"
+              onClick={() => setIsEditing(false)}
+              className="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 transition"
             >
               Cancel
             </button>
             <button
               onClick={saveProfile}
-              className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition duration-300"
+              className="px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition"
             >
-              Save Changes
+              Save
             </button>
           </div>
         </Modal>
